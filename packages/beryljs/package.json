@@ -10,7 +10,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "generate": "nearleyc parser.ne -o grammar.ts",
-    "build": "pnpm run generate && tsc"
+    "build": "pnpm run generate && tsc",
+    "dev": "concurrently \"nodemon --watch parser.ne --ext ne --exec 'pnpm run generate'\" \"tsc --watch\""
   },
   "author": "",
   "license": "ISC",
@@ -20,6 +21,8 @@
     "typescript": "^5.2.2"
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
+    "nodemon": "^3.1.14",
     "vitest": "latest"
   },
   "exports": {
