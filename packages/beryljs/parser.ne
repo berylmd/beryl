@@ -6,7 +6,7 @@
 whitespace 
 	-> input {% id %}
 	| anyWhitespace {% id %}
-	| newline newline:* input {% (data) => {return data[2]} %}
+#	| newline newline:* input {% (data) => {return data[2]} %}
 
 anyWhitespace -> _ newline:* _  {% () => {return []} %}
 

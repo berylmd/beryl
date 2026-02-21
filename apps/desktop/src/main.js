@@ -17,11 +17,12 @@ const createWindow = () => {
     },
   });
 
-  // and load the index.html of the app.
-  if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-    mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
+  // In dev, load the web app's Vite dev server. In production, load its static build output.
+  const WEB_DEV_URL = 'http://localhost:5173';
+  if (process.env.NODE_ENV !== 'production') {
+    mainWindow.loadURL(WEB_DEV_URL);
   } else {
-    mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
+    mainWindow.loadFile(path.join(__dirname, '../../../web/build/index.html'));
   }
 
   // Open the DevTools.
