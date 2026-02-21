@@ -2,13 +2,9 @@ import { app, BrowserWindow } from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
 
-// Handle creating/removing shortcuts on Windows when installing/uninstalling.
-if (started) {
-  app.quit();
-}
+if (started) app.quit();
 
 const createWindow = () => {
-  // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
@@ -17,16 +13,12 @@ const createWindow = () => {
     },
   });
 
-  // In dev, load the web app's Vite dev server. In production, load its static build output.
-  const WEB_DEV_URL = 'http://localhost:5173';
-  if (process.env.NODE_ENV !== 'production') {
-    mainWindow.loadURL(WEB_DEV_URL);
+  if (process.env.NODE_ENV === 'development') {
+    mainWindow.loadURL('http://localhost:5173');
+    mainWindow.webContents.openDevTools();
   } else {
-    mainWindow.loadFile(path.join(__dirname, '../../../web/build/index.html'));
+    mainWindow.loadFile(path.join(process.resourcesPath, 'build', 'index.html'));
   }
-
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools();
 };
 
 // This method will be called when Electron has finished
