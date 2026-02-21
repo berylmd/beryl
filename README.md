@@ -1,3 +1,19 @@
+# Red Beryl
+
+![Red Beryl](https://upload.wikimedia.org/wikipedia/commons/f/fa/Beryl-235618.jpg)
+
+> What if Beryl, but javascript?
+
+Expriments for a simpler beryl archetecture.
+
+- pnpm
+- turborepo
+- electron
+
+
+---
+
+
 # Turborepo starter
 
 This Turborepo starter is maintained by the Turborepo core team.
