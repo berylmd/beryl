@@ -1,0 +1,28 @@
+{
+  "name": "@repo/beryljs",
+  "type": "module",
+  "module": "dist/index.js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "declaration": true,
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "generate": "nearleyc parser.ne -o grammar.ts",
+    "build": "pnpm run generate && tsc"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/nearley": "^2.11.4",
+    "nearley": "^2.20.1",
+    "typescript": "^5.2.2"
+  },
+  "devDependencies": {
+    "vitest": "latest"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  }
+}
