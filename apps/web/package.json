@@ -35,6 +35,7 @@
 		"@capacitor/status-bar": "^8.0.1",
 		"@repo/beryljs": "workspace:*",
 		"@tailwindcss/vite": "^4.2.0",
-		"tailwindcss": "^4.2.0"
+		"tailwindcss": "^4.2.0",
+		"@beryl/file-adapter": "workspace:*"
 	}
 }

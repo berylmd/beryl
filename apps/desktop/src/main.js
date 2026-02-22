@@ -1,50 +1,78 @@
-import { app, BrowserWindow } from 'electron';
-import path from 'node:path';
-import started from 'electron-squirrel-startup';
+import { app, BrowserWindow, ipcMain, dialog } from 'electron'
+import path from 'node:path'
+import fs from 'node:fs/promises'
+import { watch } from 'node:fs'
+import started from 'electron-squirrel-startup'
 
-if (started) app.quit();
+if (started) app.quit()
+
+let mainWindow
+const watchers = new Map()
 
 const createWindow = () => {
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     title: 'Beryl',
-    width: 800,
-    height: 600,
+    width: 1200,
+    height: 800,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
     },
-  });
+  })
 
   if (process.env.NODE_ENV === 'development') {
-    mainWindow.loadURL('http://localhost:5173');
-    mainWindow.webContents.openDevTools();
+    mainWindow.loadURL('http://localhost:5173')
   } else {
-    mainWindow.loadFile(path.join(process.resourcesPath, 'build', 'index.html'));
+    mainWindow.loadFile(path.join(process.resourcesPath, 'build', 'index.html'))
   }
-};
+}
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
-  createWindow();
-
-  // On OS X it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
+  createWindow()
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
-    }
-  });
-});
+    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+  })
+})
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
-});
+  if (process.platform !== 'darwin') app.quit()
+})
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and import them here.
+// ── FileAdapter IPC handlers ──────────────────────────────────────────────────
+
+ipcMain.handle('beryl:readFile', async (_event, filePath) => {
+  return fs.readFile(filePath, 'utf-8')
+})
+
+ipcMain.handle('beryl:writeFile', async (_event, filePath, content) => {
+  await fs.writeFile(filePath, content, 'utf-8')
+})
+
+ipcMain.handle('beryl:listFiles', async (_event, dir) => {
+  return fs.readdir(dir)
+})
+
+ipcMain.handle('beryl:watchDir', async (_event, dir) => {
+  if (watchers.has(dir)) watchers.get(dir).close()
+  const w = watch(dir, () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('beryl:dirChanged', dir)
+    }
+  })
+  watchers.set(dir, w)
+})
+
+ipcMain.handle('beryl:unwatchDir', async (_event, dir) => {
+  if (watchers.has(dir)) {
+    watchers.get(dir).close()
+    watchers.delete(dir)
+  }
+})
+
+ipcMain.handle('beryl:pickDirectory', async () => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openDirectory'],
+  })
+  return result.canceled ? null : result.filePaths[0]
+})

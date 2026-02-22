@@ -2,7 +2,8 @@ import grammer from "./grammar.js";
 import pkg from 'nearley';
 const { Parser, Grammar } = pkg;
 
-import { Task, Comment } from "./types.js"
+import { Task, Comment, Label, LabelText } from "./types.js"
+export type { LabelText, Label } from "./types.js"
 
 
 export function initParser(){

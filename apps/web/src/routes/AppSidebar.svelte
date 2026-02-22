@@ -118,7 +118,6 @@
 							class="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm outline-none placeholder:text-muted-foreground focus:ring-1 focus:ring-ring"
 							placeholder="List name..."
 							bind:value={newListName}
-							autofocus
 							onblur={() => {
 								if (!newListName.trim()) showNewList = false;
 							}}

@@ -1,4 +1,5 @@
 {
+  "references": [{ "path": "../../packages/beryljs" }],
 	"extends": "./.svelte-kit/tsconfig.json",
 	"compilerOptions": {
 		"rewriteRelativeImportExtensions": true,
