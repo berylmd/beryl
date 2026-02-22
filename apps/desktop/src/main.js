@@ -6,6 +6,7 @@ if (started) app.quit();
 
 const createWindow = () => {
   const mainWindow = new BrowserWindow({
+    title: 'Beryl',
     width: 800,
     height: 600,
     webPreferences: {

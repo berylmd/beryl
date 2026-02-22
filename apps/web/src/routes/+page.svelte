@@ -135,7 +135,7 @@
 </script>
 
 <svelte:head>
-	<title>Beryl Tasks</title>
+	<title>Beryl</title>
 </svelte:head>
 
 <AppSidebar />
