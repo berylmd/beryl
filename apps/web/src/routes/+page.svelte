@@ -28,6 +28,9 @@
 	import PencilIcon from '@lucide/svelte/icons/pencil';
 	import CalendarIcon from '@lucide/svelte/icons/calendar';
 	import ClipboardListIcon from '@lucide/svelte/icons/clipboard-list';
+	import SunIcon from '@lucide/svelte/icons/sun';
+	import MoonIcon from '@lucide/svelte/icons/moon';
+	import { themeStore } from '$lib/theme.svelte.js';
 	import type { Priority } from '$lib/types.js';
 
 	// New todo form
@@ -148,6 +151,18 @@
 			<h1 class="text-base font-semibold">{viewTitle}</h1>
 			<span class="text-xs text-muted-foreground">{viewSubtitle}</span>
 		</div>
+		<Button
+			variant="ghost"
+			size="icon"
+			onclick={() => themeStore.toggle()}
+			aria-label="Toggle theme"
+		>
+			{#if themeStore.current === 'dark'}
+				<SunIcon class="size-4" />
+			{:else}
+				<MoonIcon class="size-4" />
+			{/if}
+		</Button>
 	</header>
 
 	<div class="flex flex-1 flex-col p-4 md:p-6">
