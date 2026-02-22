@@ -59,3 +59,7 @@ manually install android studio
 pnpm run dev-android
 pnpm run dev-ios
 ```
+
+## Build
+
+not a thing until app store keys are set up.  probably fastlane too
