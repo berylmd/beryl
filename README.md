@@ -42,10 +42,13 @@ will spin up 2 dev servers and launch the electron app.
 pnpm run build
 ```
 
-# Native Setup
+# Native Setup (mac only)
 
 ```
 brew install cocoapods
+brew install openjdk@17
+echo 'export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
 ```
 manually install xcode
 manually install android studio
