@@ -9,7 +9,7 @@ Expriments for a simpler beryl archetecture.
 - pnpm
 - turborepo
 - electron
-
+- capacitor
 
 ---
 
@@ -52,3 +52,10 @@ source ~/.zshrc
 ```
 manually install xcode
 manually install android studio
+
+## Run
+
+```
+pnpm run dev-android
+pnpm run dev-ios
+```
