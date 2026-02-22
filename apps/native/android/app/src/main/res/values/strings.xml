@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Beryl</string>
+    <string name="title_activity_main">Beryl</string>
+    <string name="package_name">io.pepware.beryl</string>
+    <string name="custom_url_scheme">io.pepware.beryl</string>
+</resources>

@@ -1,0 +1,21 @@
+{
+	"name": "beryl-native",
+	"version": "0.0.1",
+	"devDependencies": {
+		"@capacitor/assets": "^3.0.4",
+		"@capacitor/cli": "^4.7.3",
+		"typescript": "^5.0.0"
+	},
+	"type": "module",
+	"dependencies": {
+		"@capacitor/android": "^4.7.3",
+		"@capacitor/core": "^4.7.3",
+		"@capacitor/ios": "^4.7.3"
+	},
+	"scripts": {
+		"copy": "cap copy",
+		"update": "cap update",
+		"build-android": "cap build android",
+		"build-ios": "cap build ios"
+	}
+}

@@ -41,3 +41,11 @@ will spin up 2 dev servers and launch the electron app.
 ```
 pnpm run build
 ```
+
+# Native Setup
+
+```
+brew install cocoapods
+```
+manually install xcode
+manually install android studio
