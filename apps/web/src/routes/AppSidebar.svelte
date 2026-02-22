@@ -61,7 +61,7 @@
 
 <Sidebar>
 	<SidebarHeader>
-		<div class="flex items-center gap-2 px-2 py-3">
+		<div class="flex items-center gap-2 px-2 pb-3" style="padding-top: calc(var(--safe-top) + 0.75rem)">
 			<div class="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
 				<CheckSquare2Icon class="size-4" />
 			</div>

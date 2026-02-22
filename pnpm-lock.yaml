@@ -69,6 +69,9 @@ importers:
       '@capacitor/ios':
         specifier: ^8.1.0
         version: 8.1.0(@capacitor/core@8.1.0)
+      '@capacitor/status-bar':
+        specifier: ^8.0.1
+        version: 8.0.1(@capacitor/core@8.1.0)
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -85,6 +88,12 @@ importers:
 
   apps/web:
     dependencies:
+      '@capacitor/core':
+        specifier: ^8.1.0
+        version: 8.1.0
+      '@capacitor/status-bar':
+        specifier: ^8.0.1
+        version: 8.0.1(@capacitor/core@8.1.0)
       '@repo/beryljs':
         specifier: workspace:*
         version: link:../../packages/beryljs
@@ -275,6 +284,11 @@ packages:
     resolution: {integrity: sha512-wPaQ8ayL0UY+SxydZbrmfzPs8TryZVEB6hrL/XBnXxQtb6rpEmIy/3GIltPwM+/T4m/IuaSDZOToWK65ruC00g==}
     peerDependencies:
       '@capacitor/core': ^8.1.0
+
+  '@capacitor/status-bar@8.0.1':
+    resolution: {integrity: sha512-OR59dlbwvmrV5dKsC9lvwv48QaGbqcbSTBpk+9/WXWxXYSdXXdzJZU9p8oyNPAkuJhCdnSa3XmU43fZRPBJJ5w==}
+    peerDependencies:
+      '@capacitor/core': '>=8.0.0'
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -5147,6 +5161,10 @@ snapshots:
       tslib: 2.8.1
 
   '@capacitor/ios@8.1.0(@capacitor/core@8.1.0)':
+    dependencies:
+      '@capacitor/core': 8.1.0
+
+  '@capacitor/status-bar@8.0.1(@capacitor/core@8.1.0)':
     dependencies:
       '@capacitor/core': 8.1.0
 

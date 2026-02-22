@@ -141,28 +141,31 @@
 <AppSidebar />
 
 <SidebarInset>
-	<!-- Page header -->
+	<!-- Page header — background fills behind the status bar / Dynamic Island -->
 	<header
-		class="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 px-4 backdrop-blur"
+		class="sticky top-0 z-10 shrink-0 border-b bg-background/95 backdrop-blur"
+		style="padding-top: var(--safe-top)"
 	>
-		<SidebarTrigger class="-ml-1" />
-		<Separator orientation="vertical" class="h-4" />
-		<div class="flex flex-1 items-baseline gap-2">
-			<h1 class="text-base font-semibold">{viewTitle}</h1>
-			<span class="text-xs text-muted-foreground">{viewSubtitle}</span>
+		<div class="flex h-14 items-center gap-2 px-4">
+			<SidebarTrigger class="-ml-1" />
+			<Separator orientation="vertical" class="h-4" />
+			<div class="flex flex-1 items-baseline gap-2">
+				<h1 class="text-base font-semibold">{viewTitle}</h1>
+				<span class="text-xs text-muted-foreground">{viewSubtitle}</span>
+			</div>
+			<Button
+				variant="ghost"
+				size="icon"
+				onclick={() => themeStore.toggle()}
+				aria-label="Toggle theme"
+			>
+				{#if themeStore.current === 'dark'}
+					<SunIcon class="size-4" />
+				{:else}
+					<MoonIcon class="size-4" />
+				{/if}
+			</Button>
 		</div>
-		<Button
-			variant="ghost"
-			size="icon"
-			onclick={() => themeStore.toggle()}
-			aria-label="Toggle theme"
-		>
-			{#if themeStore.current === 'dark'}
-				<SunIcon class="size-4" />
-			{:else}
-				<MoonIcon class="size-4" />
-			{/if}
-		</Button>
 	</header>
 
 	<div class="flex flex-1 flex-col p-4 md:p-6">
