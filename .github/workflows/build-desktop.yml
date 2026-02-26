@@ -1,0 +1,62 @@
+# Turbo remote caching via rharkor/caching-for-turbo (free, backed by GitHub Actions cache)
+# No secrets required.
+
+name: Build Desktop
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+      fail-fast: false
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.0.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install system dependencies (Linux only)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-0 libnotify-dev libnss3 libxss1 libasound2t64 libxtst6 xauth xvfb
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Cache turbo build setup
+        uses: rharkor/caching-for-turbo@v1.8
+
+      - name: Build with Turbo
+        run: pnpm turbo run build --filter=desktop
+
+      - name: Run Electron Forge make
+        run: pnpm --filter desktop exec electron-forge make
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ matrix.os }}
+          path: apps/desktop/out/make
+          if-no-files-found: error
