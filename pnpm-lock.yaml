@@ -88,7 +88,7 @@ importers:
 
   apps/web:
     dependencies:
-      '@beryl/file-adapter':
+      '@repo/file-adapter':
         specifier: workspace:*
         version: link:../../packages/file-adapter
       '@capacitor/core':

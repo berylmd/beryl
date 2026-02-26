@@ -140,8 +140,8 @@ Located at `packages/beryljs/`. Uses Nearley parser.
 
 **Public API:**
 ```typescript
-import { parseProject, printProject } from '@beryl/beryljs'
-import type { Task } from '@beryl/beryljs'
+import { parseProject, printProject } from '@repo/beryljs'
+import type { Task } from '@repo/beryljs'
 
 // Parse markdown → Task[]
 const tasks: Task[] = parseProject(markdownString)

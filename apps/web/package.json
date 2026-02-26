@@ -1,5 +1,5 @@
 {
-	"name": "web",
+	"name": "@repo/web",
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",
@@ -36,6 +36,6 @@
 		"@repo/beryljs": "workspace:*",
 		"@tailwindcss/vite": "^4.2.0",
 		"tailwindcss": "^4.2.0",
-		"@beryl/file-adapter": "workspace:*"
+		"@repo/file-adapter": "workspace:*"
 	}
 }

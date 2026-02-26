@@ -1,4 +1,4 @@
-import type { FileAdapter } from '@beryl/file-adapter'
+import type { FileAdapter } from '@repo/file-adapter'
 
 export function createElectronAdapter(): FileAdapter {
   const api = (window as any).berylDesktop

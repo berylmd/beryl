@@ -47,7 +47,7 @@ Writing files back to disk, the file watcher, and mobile (Capacitor) are **out o
 
 ```json
 {
-  "name": "@beryl/file-adapter",
+  "name": "@repo/file-adapter",
   "version": "0.1.0",
   "type": "module",
   "main": "./src/index.ts",
@@ -102,7 +102,7 @@ Open `pnpm-workspace.yaml` at the repo root. Confirm it contains `packages/*`. I
 In `apps/web/package.json`, add to `dependencies`:
 
 ```json
-"@beryl/file-adapter": "workspace:*"
+"@repo/file-adapter": "workspace:*"
 ```
 
 Run from the repo root:
@@ -231,7 +231,7 @@ contextBridge.exposeInMainWorld('berylDesktop', {
 Start the desktop app in dev mode:
 
 ```bash
-pnpm --filter @beryl/desktop dev
+pnpm --filter @repo/desktop dev
 ```
 
 The window opens. Open DevTools (View → Toggle Developer Tools). In the console run:
@@ -265,7 +265,7 @@ export function detectPlatform(): Platform {
 Create the directory `apps/web/src/lib/adapters/` first.
 
 ```typescript
-import type { FileAdapter } from '@beryl/file-adapter'
+import type { FileAdapter } from '@repo/file-adapter'
 
 export function createElectronAdapter(): FileAdapter {
   const api = (window as any).berylDesktop
@@ -299,7 +299,7 @@ export function createElectronAdapter(): FileAdapter {
 This file satisfies the TypeScript compiler. It is not functional. It will be implemented in a future plan.
 
 ```typescript
-import type { FileAdapter } from '@beryl/file-adapter'
+import type { FileAdapter } from '@repo/file-adapter'
 
 export function createCapacitorAdapter(): FileAdapter {
   const notImplemented = (name: string) => () => {
@@ -335,7 +335,7 @@ Fix all errors before continuing. These three files have no runtime side effects
 ### Step 4.1 — Create `apps/web/src/lib/workspace.svelte.ts`
 
 ```typescript
-import type { FileAdapter } from '@beryl/file-adapter'
+import type { FileAdapter } from '@repo/file-adapter'
 import { detectPlatform } from './platform.js'
 import { createElectronAdapter } from './adapters/electron.js'
 import { createCapacitorAdapter } from './adapters/capacitor.js'
@@ -439,7 +439,7 @@ function normalizeComments(comments: unknown): string {
 ### Step 5.2 — Create `apps/web/src/lib/data.svelte.ts`
 
 ```typescript
-import { parseProject } from '@beryl/beryljs'
+import { parseProject } from '@repo/beryljs'
 import type { Todo, List, Priority } from './types.js'
 import { workspace } from './workspace.svelte.js'
 
@@ -844,7 +844,7 @@ Create a folder on your computer (e.g. `~/beryl-test`) with two `.md` files:
 ### Step 8.2 — Run the desktop app
 
 ```bash
-pnpm --filter @beryl/desktop dev
+pnpm --filter @repo/desktop dev
 ```
 
 ### Step 8.3 — Test checklist

@@ -1,4 +1,4 @@
-import type { FileAdapter } from '@beryl/file-adapter'
+import type { FileAdapter } from '@repo/file-adapter'
 import { detectPlatform } from './platform.js'
 import { createElectronAdapter } from './adapters/electron.js'
 import { createCapacitorAdapter } from './adapters/capacitor.js'

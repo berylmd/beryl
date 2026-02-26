@@ -1,5 +1,5 @@
 
-import type { FileAdapter } from '@beryl/file-adapter'
+import type { FileAdapter } from '@repo/file-adapter'
 
 export function createCapacitorAdapter(): FileAdapter {
   const notImplemented = (name: string) => () => {
