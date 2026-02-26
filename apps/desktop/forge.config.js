@@ -4,7 +4,7 @@ const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 module.exports = {
   packagerConfig: {
     name: 'Beryl',
-    executableName: 'Beryl',
+    executableName: 'beryl',
     asar: true,
     icon: './assets/icon',
     extraResource: [
@@ -28,6 +28,7 @@ module.exports = {
       config: {
         options: {
           icon: './assets/icon.png',
+          bin: 'beryl',
         },
       },
     },
@@ -36,6 +37,7 @@ module.exports = {
       config: {
         options: {
           icon: './assets/icon.png',
+          bin: 'beryl',
         },
       },
     },
