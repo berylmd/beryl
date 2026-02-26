@@ -20,6 +20,9 @@ importers:
 
   apps/desktop:
     dependencies:
+      '@repo/web':
+        specifier: workspace:*
+        version: link:../web
       electron-squirrel-startup:
         specifier: ^1.0.1
         version: 1.0.1
@@ -88,9 +91,6 @@ importers:
 
   apps/web:
     dependencies:
-      '@repo/file-adapter':
-        specifier: workspace:*
-        version: link:../../packages/file-adapter
       '@capacitor/core':
         specifier: ^8.1.0
         version: 8.1.0
@@ -100,6 +100,9 @@ importers:
       '@repo/beryljs':
         specifier: workspace:*
         version: link:../../packages/beryljs
+      '@repo/file-adapter':
+        specifier: workspace:*
+        version: link:../../packages/file-adapter
       '@tailwindcss/vite':
         specifier: ^4.2.0
         version: 4.2.0(vite@7.3.1(@types/node@22.15.3)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0))
