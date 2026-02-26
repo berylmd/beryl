@@ -49,7 +49,7 @@ jobs:
         uses: rharkor/caching-for-turbo@v1.8
 
       - name: Build with Turbo
-        run: pnpm turbo run build --filter=desktop
+        run: pnpm turbo run build
 
       - name: Run Electron Forge make
         run: pnpm --filter desktop exec electron-forge make
