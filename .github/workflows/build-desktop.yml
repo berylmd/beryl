@@ -51,9 +51,6 @@ jobs:
       - name: Build with Turbo
         run: pnpm turbo run build --filter=desktop
 
-      - name: Run Electron Forge make
-        run: pnpm --filter desktop exec electron-forge make
-
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
