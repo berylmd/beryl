@@ -8,7 +8,8 @@
   "declaration": true,
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "generate": "nearleyc parser.ne -o grammar.ts",
     "build": "pnpm run generate && tsc",
     "dev": "concurrently \"nodemon --watch parser.ne --ext ne --exec 'pnpm run generate'\" \"tsc --watch\""

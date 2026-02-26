@@ -24,6 +24,15 @@
     "dev-ios": {
       "cache": false,
       "persistent": true
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", "**/*.test.js", "**/*.test.ts"],
+      "outputs": []
+    },
+    "test:watch": {
+      "cache": false,
+      "persistent": true
     }
   }
 }
