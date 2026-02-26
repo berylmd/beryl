@@ -32,12 +32,20 @@ module.exports = {
         },
       },
     },
+    // {
+    //   name: '@electron-forge/maker-rpm',
+    //   config: {
+    //     options: {
+    //       icon: './assets/icon.png',
+    //       bin: 'beryl',
+    //     },
+    //   },
+    // },
     {
-      name: '@electron-forge/maker-rpm',
+      name: '@reforged/maker-appimage',
       config: {
         options: {
           icon: './assets/icon.png',
-          bin: 'beryl',
         },
       },
     },
