@@ -45,6 +45,7 @@ module.exports = {
       name: '@reforged/maker-appimage',
       config: {
         options: {
+          bin: 'beryl',
           icon: './assets/icon.png',
         },
       },
