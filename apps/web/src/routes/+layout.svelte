@@ -15,10 +15,7 @@
 
 	onMount(async () => {
 	  workspace.init()
-	  console.log('Platform:', detectPlatform())
-	  console.log('workspace.fileAdapter:', workspace.fileAdapter)
-	  console.log('workspace.rootDir:', workspace.rootDir)
-	  console.log('workspace.hasWorkspace:', workspace.hasWorkspace)
+
 	  if (workspace.hasWorkspace) {
 	    await dataStore.loadWorkspace()
 	  }
