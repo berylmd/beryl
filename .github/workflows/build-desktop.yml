@@ -21,21 +21,23 @@ jobs:
           # For non-tag pushes/PRs: only run on Ubuntu
           - os: ubuntu-latest
             is_release: false
+            run_on: "(github.event_name == 'pull_request' || (github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/')))"
           # For release tag pushes: run on all 3 platforms
           - os: ubuntu-latest
             is_release: true
+            run_on: "(github.event_name == 'push' && startsWith(github.ref, 'refs/tags/'))"
           - os: macos-latest
             is_release: true
+            run_on: "(github.event_name == 'push' && startsWith(github.ref, 'refs/tags/'))"
           - os: windows-latest
             is_release: true
+            run_on: "(github.event_name == 'push' && startsWith(github.ref, 'refs/tags/'))"
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
 
-    # Only run Ubuntu for non-tag pushes/PRs, run all 3 for tags
-    if: >
-      (github.event_name == 'pull_request' || (github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/'))) && matrix.os == 'ubuntu-latest'
-      || (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) && matrix.is_release
+    # Only run matrix entries that match their run_on condition
+    if: ${{ fromJson(matrix.run_on) }}
 
     steps:
       - name: Checkout repository
