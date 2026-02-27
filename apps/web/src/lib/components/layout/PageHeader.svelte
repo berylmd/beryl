@@ -6,7 +6,7 @@
 	import SunIcon from '@lucide/svelte/icons/sun';
 	import MoonIcon from '@lucide/svelte/icons/moon';
 
-	let { title, subtitle }: { title: string; subtitle: string } = $props();
+	let { title, subtitle = "" }: { title: string; subtitle?: string } = $props();
 </script>
 
 <header
