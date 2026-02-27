@@ -62,6 +62,16 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Inject version from git tag
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        run: |
+          # Extract version from tag (e.g., v1.2.3 -> 1.2.3)
+          VERSION=$(echo ${{ github.ref }} | sed 's/refs\/tags\///' | sed 's/^v//')
+          echo "Injecting version: $VERSION into apps/desktop/package.json"
+          cd apps/desktop
+          jq --arg version "$VERSION" '.version = $version' package.json > package.json.tmp && mv package.json.tmp package.json
+          cat package.json | jq '.version'
+
       - name: Cache turbo build setup
         uses: rharkor/caching-for-turbo@v1.8
 
@@ -74,3 +84,28 @@ jobs:
           name: desktop-${{ matrix.os }}
           path: apps/desktop/out/make
           if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Display structure of downloaded files
+        run: ls -R artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: |
+            artifacts/desktop-ubuntu-latest/**/*
+            artifacts/desktop-macos-latest/**/*
+            artifacts/desktop-windows-latest/**/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
