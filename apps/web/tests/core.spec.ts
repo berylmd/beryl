@@ -1,23 +1,14 @@
 import { test, expect } from '@playwright/test'
-import { setupTestAdapter, getFileContent, getWriteHistory, resetWriteHistory } from '../src/lib/adapters/test'
+import { setupTestAdapter, resetWriteHistory } from '../src/lib/adapters/test'
 
-/**
- * File Watcher Integration Test
- * 
- * This test demonstrates the complete workflow:
- * 1. Set initial task file state
- * 2. Load the workspace
- * 3. Add a new task via UI
- * 4. Toggle task completion
- * 5. Verify final file state
- */
-test.describe('File Watcher', () => {
-  test('should add and toggle tasks, persisting changes to file', async ({ page }) => {
-    // Clear localStorage first
+test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.clear()
     })
+});
 
+test.describe('Core functionality', () => {
+  test('reads from test adapter and displays tasks', async ({ page }) => {
     // Setup test adapter with initial file state
     await setupTestAdapter(page, {
       '/test-workspace/inbox.md': `- [ ] Buy groceries
@@ -26,13 +17,8 @@ test.describe('File Watcher', () => {
 `,
     })
 
-    // Navigate to the app
     await page.goto('/')
 
-    // Open workspace
-    // await page.click('button:has-text("Open Workspace Folder")')
-
-    // Verify initial tasks are loaded
     await expect(page.locator('text=Buy groceries')).toBeVisible()
     await expect(page.locator('text=Call mom')).toBeVisible()
     await expect(page.locator('text=Finish report')).toBeVisible()

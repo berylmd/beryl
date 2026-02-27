@@ -137,124 +137,6 @@ export interface SerializedTestAdapter {
   files: [string, string][]
   rootDir: string
 }
-
-/**
- * Create a test adapter in the browser context from serialized data.
- * This creates an object with the same interface but with live methods.
- */
-export function createBrowserTestAdapter(serialized: SerializedTestAdapter): FileAdapter & { 
-  __testAdapter: TestFileAdapter 
-  getFileContent: (path: string) => string | undefined
-  getWriteHistory: () => Array<{ path: string; content: string }>
-  setFile: (path: string, content: string) => void
-  resetHistory: () => void
-  notifyWatchers: () => void
-} {
-  const files = new Map(serialized.files)
-  const writeHistory: Array<{ path: string; content: string }> = []
-  const watchCallbacks: Set<() => void> = new Set()
-  const rootDir = serialized.rootDir
-
-  // Create a proxy that tracks file changes for the test API
-  const trackedFiles = new Map(serialized.files)
-
-  const adapter = {
-    async readFile(path: string): Promise<string> {
-      const content = files.get(path)
-      if (content === undefined) {
-        throw new Error(`File not found: ${path}`)
-      }
-      return content
-    },
-
-    async writeFile(path: string, content: string): Promise<void> {
-      files.set(path, content)
-      trackedFiles.set(path, content)
-      writeHistory.push({ path, content })
-      // Trigger watch callbacks
-      for (const callback of watchCallbacks) {
-        callback()
-      }
-    },
-
-    async listFiles(dir: string): Promise<string[]> {
-      const result: string[] = []
-      const normalizedDir = dir.endsWith('/') ? dir : dir + '/'
-      for (const path of files.keys()) {
-        if (path.startsWith(normalizedDir)) {
-          const relativePath = path.slice(normalizedDir.length)
-          if (!relativePath.includes('/')) {
-            result.push(relativePath)
-          }
-        }
-      }
-      return result
-    },
-
-    async watchDir(dir: string, callback: () => void): Promise<() => void> {
-      watchCallbacks.add(callback)
-      return () => {
-        watchCallbacks.delete(callback)
-      }
-    },
-
-    async pickDirectory(): Promise<string | null> {
-      return rootDir
-    },
-
-    // Test-specific methods
-    getFileContent(path: string): string | undefined {
-      return trackedFiles.get(path)
-    },
-
-    getWriteHistory(): Array<{ path: string; content: string }> {
-      return [...writeHistory]
-    },
-
-    setFile(path: string, content: string): void {
-      trackedFiles.set(path, content)
-      // Trigger watch callbacks
-      for (const callback of watchCallbacks) {
-        callback()
-      }
-    },
-
-    resetHistory(): void {
-      writeHistory.length = 0
-    },
-
-    notifyWatchers(): void {
-      for (const callback of watchCallbacks) {
-        callback()
-      }
-    },
-  }
-
-  return adapter as typeof adapter & { 
-    __testAdapter: TestFileAdapter 
-    getFileContent: (path: string) => string | undefined
-    getWriteHistory: () => Array<{ path: string; content: string }>
-    setFile: (path: string, content: string) => void
-    resetHistory: () => void
-    notifyWatchers: () => void
-  }
-}
-
-/**
- * Inject the test adapter into the window object.
- * Call this before navigating to the app to make it use the test adapter.
- */
-export function injectTestAdapter(adapter: TestFileAdapter): void {
-  ;(window as any).__BERYL_TEST_ADAPTER__ = adapter
-}
-
-/**
- * Get the currently injected test adapter (if any)
- */
-export function getTestAdapter(): TestFileAdapter | undefined {
-  return (window as any).__BERYL_TEST_ADAPTER__
-}
-
 /**
  * Setup the test adapter in the browser context for Playwright tests.
  * Call this in your test's beforeEach or addInitScript.
@@ -277,7 +159,6 @@ export async function setupTestAdapter(
     const writeHistory: Array<{ path: string; content: string }> = []
     const watchCallbacks: Set<() => void> = new Set()
     const rootDir = serialized.rootDir
-    const trackedFiles = new Map(serialized.files)
 
     const adapter = {
       async readFile(path: string): Promise<string> {
@@ -290,7 +171,6 @@ export async function setupTestAdapter(
 
       async writeFile(path: string, content: string): Promise<void> {
         files.set(path, content)
-        trackedFiles.set(path, content)
         writeHistory.push({ path, content })
         for (const callback of watchCallbacks) {
           callback()
@@ -323,7 +203,7 @@ export async function setupTestAdapter(
       },
 
       getFileContent(path: string): string | undefined {
-        return trackedFiles.get(path)
+        return files.get(path)
       },
 
       getWriteHistory(): Array<{ path: string; content: string }> {
@@ -331,7 +211,6 @@ export async function setupTestAdapter(
       },
 
       setFile(path: string, content: string): void {
-        trackedFiles.set(path, content)
         files.set(path, content)
         for (const callback of watchCallbacks) {
           callback()
@@ -352,6 +231,7 @@ export async function setupTestAdapter(
     ;(window as any).__BERYL_TEST_ADAPTER__ = adapter
   }, serialized)
 }
+
 
 /**
  * Get the current file content from the browser's test adapter.
