@@ -3,7 +3,8 @@
 	import { dataStore } from '$lib/data.svelte.js';
 	import WorkspaceSetup from '$lib/components/WorkspaceSetup.svelte';
 	import { SidebarInset } from '$lib/components/ui/sidebar/index.js';
-	import AppSidebar from './AppSidebar.svelte';
+	// import AppSidebar from './AppSidebar.svelte';
+	import AppSidebar from '../lib/components/ui/AppSidebar.svelte'
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import AddTaskForm from '$lib/components/tasks/AddTaskForm.svelte';
 	import TaskList from '$lib/components/tasks/TaskList.svelte';
