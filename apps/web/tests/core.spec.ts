@@ -9,7 +9,6 @@ test.beforeEach(async ({ page }) => {
 
 test.describe('Core functionality', () => {
   test('reads from test adapter and displays tasks', async ({ page }) => {
-    // Setup test adapter with initial file state
     await setupTestAdapter(page, {
       '/test-workspace/inbox.md': `- [ ] Buy groceries
 - [x] Call mom
@@ -23,36 +22,56 @@ test.describe('Core functionality', () => {
     await expect(page.locator('text=Call mom')).toBeVisible()
     await expect(page.locator('text=Finish report')).toBeVisible()
 
-    // Reset write history to track only new changes
-    await resetWriteHistory(page)
-
-    // Add a new task
     const input = page.locator('input[placeholder="Add a task... press Enter to save"]')
     await input.fill('Learn Playwright')
     await input.press('Enter')
 
-    // Verify new task appears in UI
     await expect(page.locator('text=Learn Playwright')).toBeVisible()
-
-    // // Verify file was updated with new task
-    // const content = await getFileContent(page, '/test-workspace/inbox.md')
-    // expect(content).toContain('Learn Playwright')
-
-    // // Get write history and verify a write occurred
-    // const history = await getWriteHistory(page)
-    // expect(history.length).toBeGreaterThan(0)
-
-    // // Toggle the first task (Buy groceries) - find its checkbox
-    // const firstCheckbox = page.locator('input[type="checkbox"]').first()
-    // await firstCheckbox.click()
-
-    // // Verify checkbox is now checked
-    // await expect(firstCheckbox).toBeChecked()
-
-    // // Verify file was updated with toggled task
-    // const finalContent = await getFileContent(page, '/test-workspace/inbox.md')
-    // expect(finalContent).toContain('- [x] Buy groceries')
-    // expect(finalContent).toContain('- [ ] Finish report')
-    // expect(finalContent).toContain('Learn Playwright')
   })
+
+
+//   test('read/write from test adapter and displays tasks', async ({ page }) => {
+//        await setupTestAdapter(page, {
+//       '/test-workspace/inbox.md': `- [ ] Buy groceries
+// - [x] Call mom
+// - [ ] Finish report
+// `,
+//     })
+
+//     await page.goto('/')
+
+//     await expect(page.locator('text=Buy groceries')).toBeVisible()
+//     await expect(page.locator('text=Call mom')).toBeVisible()
+//     await expect(page.locator('text=Finish report')).toBeVisible()
+
+//     const input = page.locator('input[placeholder="Add a task... press Enter to save"]')
+//     await input.fill('Learn Playwright')
+//     await input.press('Enter')
+
+//     await expect(page.locator('text=Learn Playwright')).toBeVisible()
+
+//     // Reset write history to track only new changes
+//     await resetWriteHistory(page)
+
+//     // Verify file was updated with new task
+//     const content = await getFileContent(page, '/test-workspace/inbox.md')
+//     expect(content).toContain('Learn Playwright')
+
+//     // Get write history and verify a write occurred
+//     const history = await getWriteHistory(page)
+//     expect(history.length).toBeGreaterThan(0)
+
+//     // Toggle the first task (Buy groceries) - find its checkbox
+//     const firstCheckbox = page.locator('input[type="checkbox"]').first()
+//     await firstCheckbox.click()
+
+//     // Verify checkbox is now checked
+//     await expect(firstCheckbox).toBeChecked()
+
+//     // Verify file was updated with toggled task
+//     const finalContent = await getFileContent(page, '/test-workspace/inbox.md')
+//     expect(finalContent).toContain('- [x] Buy groceries')
+//     expect(finalContent).toContain('- [ ] Finish report')
+//     expect(finalContent).toContain('Learn Playwright') 
+//   })
 })
