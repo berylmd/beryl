@@ -186,6 +186,9 @@ importers:
       nodemon:
         specifier: ^3.1.14
         version: 3.1.14
+      vite:
+        specifier: latest
+        version: 7.3.1(@types/node@22.15.3)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)
       vitest:
         specifier: latest
         version: 4.0.18(@types/node@22.15.3)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)
