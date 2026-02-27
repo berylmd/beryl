@@ -219,7 +219,6 @@ describe("whitespace", () => {
   it('should return empty task list', () => {
     assert.ok(parser.feed("\n"));
     const result = parser.results;
-    console.log("blarg", result)
     assert.equal(result.length, 1)
     assert.equal(result[0].length, 0)
   });

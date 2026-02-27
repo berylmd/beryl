@@ -8,6 +8,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe('Core functionality', () => {
+
   test('reads from test adapter and displays tasks', async ({ page }) => {
     await setupTestAdapter(page, {
       '/test-workspace/inbox.md': `- [ ] Buy groceries
@@ -27,6 +28,36 @@ test.describe('Core functionality', () => {
     await input.press('Enter')
 
     await expect(page.locator('text=Learn Playwright')).toBeVisible()
+  })
+
+
+  test('sidebar has all projects', async ({ page }) => {
+    await setupTestAdapter(page, {
+      '/test-workspace/project1.md': `- [ ] task1`,
+      '/test-workspace/project2.md': `- [ ] task2`
+    })
+
+    await page.goto('/')
+
+    await expect(page.getByRole('button', { name: 'project1' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'project2' })).toBeVisible()
+  })
+
+  test('sidebar changes projects', async ({ page }) => {
+    await setupTestAdapter(page, {
+      '/test-workspace/project1.md': `- [ ] task1`,
+      '/test-workspace/project2.md': `- [ ] task2`
+    })
+
+    await page.goto('/')
+
+    const input = page.getByRole('button', { name: 'project2' })
+
+    await expect(page.locator('text=task1')).toBeVisible()
+
+    input.click()
+
+    await expect(page.locator('text=task2')).toBeVisible()
   })
 
 

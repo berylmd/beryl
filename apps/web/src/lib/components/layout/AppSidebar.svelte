@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { todosStore } from '$lib/todos.svelte.js';
-	import { cn } from '$lib/utils.js';
 	import {
 		Sidebar,
 		SidebarContent,
@@ -10,49 +8,24 @@
 		SidebarGroupLabel,
 		SidebarHeader,
 		SidebarMenu,
-		SidebarMenuBadge,
 		SidebarMenuButton,
 		SidebarMenuItem,
-		SidebarSeparator
 	} from '$lib/components/ui/sidebar/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import CheckSquare2Icon from '@lucide/svelte/icons/check-square-2';
-	import InboxIcon from '@lucide/svelte/icons/inbox';
-	import CalendarIcon from '@lucide/svelte/icons/calendar';
-	import CalendarDaysIcon from '@lucide/svelte/icons/calendar-days';
-	import CheckCircle2Icon from '@lucide/svelte/icons/check-circle-2';
 	import PlusIcon from '@lucide/svelte/icons/plus';
-	import CircleIcon from '@lucide/svelte/icons/circle';
 	import SettingsIcon from '@lucide/svelte/icons/settings';
-	import Trash2Icon from '@lucide/svelte/icons/trash-2';
+
+	import { dataStore } from '$lib/data.svelte.js';
 
 	let newListName = $state('');
 	let showNewList = $state(false);
 	let hoveringListId = $state<string | null>(null);
 
-	const filters = [
-		{ id: 'all' as const, label: 'Inbox', icon: InboxIcon },
-		{ id: 'today' as const, label: 'Today', icon: CalendarIcon },
-		{ id: 'upcoming' as const, label: 'Upcoming', icon: CalendarDaysIcon },
-		{ id: 'completed' as const, label: 'Completed', icon: CheckCircle2Icon }
-	];
-
-	const listColorClasses: Record<string, string> = {
-		blue: 'text-blue-500 fill-blue-500',
-		purple: 'text-purple-500 fill-purple-500',
-		green: 'text-green-500 fill-green-500',
-		red: 'text-red-500 fill-red-500',
-		orange: 'text-orange-500 fill-orange-500',
-		pink: 'text-pink-500 fill-pink-500',
-		slate: 'text-slate-500 fill-slate-500'
-	};
-
 	function handleAddList(e: SubmitEvent) {
 		e.preventDefault();
 		if (newListName.trim()) {
-			const colors = ['blue', 'purple', 'green', 'red', 'orange', 'pink'];
-			const color = colors[todosStore.lists.length % colors.length];
-			todosStore.addList(newListName.trim(), color);
+			dataStore.addList(newListName.trim());
 			newListName = '';
 			showNewList = false;
 		}
@@ -74,7 +47,7 @@
 
 	<SidebarContent>
 		<!-- Navigation filters -->
-		<SidebarGroup>
+		<!-- <SidebarGroup>
 			<SidebarMenu>
 				{#each filters as filter}
 					{@const count = todosStore.counts[filter.id]}
@@ -96,12 +69,12 @@
 			</SidebarMenu>
 		</SidebarGroup>
 
-		<SidebarSeparator />
+		<SidebarSeparator /> -->
 
 		<!-- Lists -->
 		<SidebarGroup>
 			<SidebarGroupLabel>
-				<span>My Lists</span>
+				<span>Projects</span>
 				<Button
 					variant="ghost"
 					size="icon"
@@ -131,39 +104,18 @@
 					</form>
 				{/if}
 				<SidebarMenu>
-					{#each todosStore.lists as list (list.id)}
-						{@const count = todosStore.todos.filter(
-							(t) => t.listId === list.id && !t.completed
-						).length}
+					{#each dataStore.lists as list (list.id)}
 						<SidebarMenuItem
 							onmouseenter={() => (hoveringListId = list.id)}
 							onmouseleave={() => (hoveringListId = null)}
 						>
 							<SidebarMenuButton
-								isActive={todosStore.activeListId === list.id}
-								onclick={() => todosStore.setActiveList(list.id)}
+								isActive={dataStore.activeListId === list.id}
+								onclick={() => dataStore.setActiveList(list.id)}
 								class="group/list"
 							>
-								<CircleIcon
-									class={cn('size-2.5', listColorClasses[list.color] ?? listColorClasses.slate)}
-								/>
-								<span class="flex-1 truncate">{list.name}</span>
+								<span class="flex-1 truncate">{list.id}</span>
 							</SidebarMenuButton>
-							{#if hoveringListId === list.id}
-								<button
-									class="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover/item:opacity-100"
-									onclick={(e) => {
-										e.stopPropagation();
-										todosStore.deleteList(list.id);
-									}}
-									aria-label="Delete list"
-								>
-									<Trash2Icon class="size-3.5" />
-								</button>
-							{/if}
-							{#if count > 0 && hoveringListId !== list.id}
-								<SidebarMenuBadge>{count}</SidebarMenuBadge>
-							{/if}
 						</SidebarMenuItem>
 					{/each}
 				</SidebarMenu>
