@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { dataStore } from '$lib/data.svelte.js';
-	import { cn } from '$lib/utils.js';
+	import { cn } from '$lib/components/ui/lib.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import {

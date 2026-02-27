@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Todo } from '$lib/types.js';
 	import { dataStore } from '$lib/data.svelte.js';
-	import { cn } from '$lib/utils.js';
+	import { cn } from '$lib/components/ui/lib.js';
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import {
