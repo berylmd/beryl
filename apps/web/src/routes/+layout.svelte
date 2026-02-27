@@ -3,7 +3,6 @@
 	import { themeStore } from '$lib/theme.svelte.js';
 	import { onMount } from 'svelte'
 	import { workspace } from '$lib/workspace.svelte.js'
-	import { detectPlatform } from '$lib/platform.js'
 	import { dataStore } from '$lib/data.svelte.js'
 	import './layout.css';
 
