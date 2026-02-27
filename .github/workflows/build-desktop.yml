@@ -37,7 +37,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     # Only run matrix entries that match their run_on condition
-    if: ${{ fromJson(matrix.run_on) }}
+    if: ${{ matrix.run_on }}
 
     steps:
       - name: Checkout repository
