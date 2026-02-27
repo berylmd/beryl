@@ -1,4 +1,4 @@
-export type Platform = 'electron' | 'capacitor' | 'browser'
+type Platform = 'electron' | 'capacitor' | 'browser'
 
 export function detectPlatform(): Platform {
   if (typeof (window as any).berylDesktop !== 'undefined') return 'electron'
