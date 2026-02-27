@@ -10,8 +10,8 @@
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"test": "playwright test",
-		"test:ui": "playwright test --ui"
+		"test": "playwright install chromium && playwright test",
+		"test:ui": "playwright install chromium && playwright test --ui"
 	},
 	"devDependencies": {
 		"@fontsource/fira-mono": "^5.2.7",
