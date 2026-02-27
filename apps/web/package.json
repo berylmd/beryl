@@ -9,13 +9,16 @@
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"test": "playwright test",
+		"test:ui": "playwright test --ui"
 	},
 	"devDependencies": {
 		"@fontsource/fira-mono": "^5.2.7",
 		"@internationalized/date": "^3.10.0",
 		"@lucide/svelte": "^0.561.0",
 		"@neoconfetti/svelte": "^2.2.2",
+		"@playwright/test": "^1.58.2",
 		"@sveltejs/adapter-auto": "^7.0.1",
 		"@sveltejs/adapter-static": "^3.0.10",
 		"@sveltejs/kit": "^2.53.0",
@@ -34,8 +37,8 @@
 		"@capacitor/core": "^8.1.0",
 		"@capacitor/status-bar": "^8.0.1",
 		"@repo/beryljs": "workspace:*",
+		"@repo/file-adapter": "workspace:*",
 		"@tailwindcss/vite": "^4.2.0",
-		"tailwindcss": "^4.2.0",
-		"@repo/file-adapter": "workspace:*"
+		"tailwindcss": "^4.2.0"
 	}
 }

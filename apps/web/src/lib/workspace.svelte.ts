@@ -11,6 +11,26 @@ function createWorkspaceStore() {
   let isReady = $state(false)
 
   function init() {
+    // Check for test adapter first (injected by Playwright tests)
+    // This must be checked BEFORE platform detection
+    if (typeof window !== 'undefined') {
+      const testAdapter = (window as any).__BERYL_TEST_ADAPTER__
+      if (testAdapter) {
+        console.log('[Workspace] Using test adapter')
+        fileAdapter = testAdapter
+        rootDir = '/test-workspace'
+        isReady = true
+        return
+      }
+      
+      // Check if we have a saved directory but no adapter (browser mode)
+      const saved = localStorage.getItem(STORAGE_KEY)
+      if (saved && !fileAdapter) {
+        // Clear invalid saved state
+        localStorage.removeItem(STORAGE_KEY)
+      }
+    }
+
     // Pick the right adapter for this platform
     const platform = detectPlatform()
     if (platform === 'electron') {
