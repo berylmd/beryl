@@ -13,8 +13,8 @@
  */
 if (import.meta.env.VITE_CODEGEN === 'true' && typeof window !== 'undefined') {
   const files = new Map<string, string>([
-    ['/test-workspace/inbox.md',    '- [ ] Buy groceries p:high due:2026-03-01\n- [x] Call mom\n- [ ] Finish report p:low\n'],
-    ['/test-workspace/work.md',     '- [ ] Review PR p:high\n- [ ] Update docs\n- [ ] Team standup due:2026-02-28\n'],
+    ['/test-workspace/inbox.md',    '- [ ] Buy groceries due:2026-03-01\n- [x] Call mom\n- [ ] Finish report\n'],
+    ['/test-workspace/work.md',     '- [ ] Review PR\n- [ ] Update docs\n- [ ] Team standup due:2026-02-28\n'],
     ['/test-workspace/personal.md', '- [ ] Book dentist\n- [ ] Plan weekend\n'],
   ])
 

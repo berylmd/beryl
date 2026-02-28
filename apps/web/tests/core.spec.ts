@@ -179,34 +179,6 @@ test.describe('Write-back functionality', () => {
     expect(history.length).toBeGreaterThan(0)
   })
 
-  test('adding task with priority writes priority to file', async ({ page }) => {
-    await setupTestAdapter(page, {
-      '/test-workspace/inbox.md': `- [ ] Regular task
-`,
-    })
-
-    await page.goto('/')
-
-    // Wait for initial load
-    await expect(page.locator('text=Regular task')).toBeVisible()
-
-    // Reset history before making changes
-    await resetWriteHistory(page)
-
-    // Add a high priority task - need to check how the UI handles priority
-    // For now, test that basic add works and check the format
-    const input = page.locator('input[placeholder="Add a task... press Enter to save"]')
-    await input.fill('High priority task p:high')
-    await input.press('Enter')
-
-    // Wait for the write to complete
-    await page.waitForTimeout(400)
-
-    // Verify the file contains the priority marker
-    const content = await getFileContent(page, '/test-workspace/inbox.md')
-    expect(content).toContain('p:high')
-  })
-
 })
 
 test.describe('empty start', () => {

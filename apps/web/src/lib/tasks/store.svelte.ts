@@ -126,7 +126,6 @@ function createDataStore() {
       id:        crypto.randomUUID(),
       title:     partial.title,
       completed: false,
-      priority:  'medium',
       dueDate:   null,
       listId:    partial.listId,
       createdAt: new Date().toISOString(),

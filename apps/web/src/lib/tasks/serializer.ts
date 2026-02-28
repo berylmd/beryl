@@ -1,6 +1,6 @@
 import { parseProject } from '@repo/beryljs'
 import type { LabelText } from '@repo/beryljs'
-import type { Todo, Priority } from './types.js'
+import type { Todo } from './types.js'
 
 export function stripLabels(description: string): string {
   return description
@@ -15,13 +15,6 @@ export function normalizeComments(comments: unknown): string {
   return String(comments)
 }
 
-export function parsePriority(labels: LabelText[]): Priority {
-  const p = labels.find((l) => l.labels.label === 'p')
-  if (p?.labels.text === 'high') return 'high'
-  if (p?.labels.text === 'low')  return 'low'
-  return 'medium'
-}
-
 export function parseDueDate(labels: LabelText[]): string | null {
   const d = labels.find((l) => l.labels.label === 'due')
   return d ? d.labels.text : null
@@ -34,9 +27,7 @@ export function fileNameToListId(filename: string): string {
 export function serializeTodo(todo: Todo): string {
   let line = todo.completed ? '- [x]' : '- [ ]'
   line += ` ${todo.title}`
-  if (todo.priority === 'high') line += ' p:high'
-  if (todo.priority === 'low')  line += ' p:low'
-  if (todo.dueDate)             line += ` due:${todo.dueDate}`
+  if (todo.dueDate) line += ` due:${todo.dueDate}`
   if (todo.notes) {
     for (const noteLine of todo.notes.split('\n')) {
       line += `\n\t>${noteLine}`
@@ -64,7 +55,6 @@ export function parseFile(content: string, listId: string): Todo[] {
       id:        crypto.randomUUID(),
       title:     stripLabels(t.description),
       completed: t.checked,
-      priority:  parsePriority(t.labels ?? []),
       dueDate:   parseDueDate(t.labels ?? []),
       listId,
       createdAt: new Date().toISOString(),
