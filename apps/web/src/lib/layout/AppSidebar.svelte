@@ -16,7 +16,7 @@
 	import PlusIcon from '@lucide/svelte/icons/plus';
 	import SettingsIcon from '@lucide/svelte/icons/settings';
 
-	import { dataStore } from '$lib/data.svelte.js';
+	import { dataStore } from '$lib/tasks/store.svelte.js';
 
 	let newListName = $state('');
 	let showNewList = $state(false);

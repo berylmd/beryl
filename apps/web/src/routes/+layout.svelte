@@ -1,10 +1,8 @@
 <script lang="ts">
-	import '$lib/adapters/codegen-setup.js';
-	import { SidebarProvider } from '$lib/components/ui/sidebar/index.js';
-	import { themeStore } from '$lib/theme.svelte.js';
+	import '$lib/workspace/adapters/codegen-setup.js';
+	import { themeStore } from '$lib/theme/store.svelte.js';
 	import { onMount } from 'svelte'
-	import { workspace } from '$lib/workspace.svelte.js'
-	import { dataStore } from '$lib/data.svelte.js'
+	import { workspace } from '$lib/workspace/store.svelte.js'
 	import './layout.css';
 
 	let { children } = $props();
@@ -13,15 +11,9 @@
 		themeStore.init();
 	});
 
-	onMount(async () => {
+	onMount(() => {
 	  workspace.init()
-
-	  if (workspace.hasWorkspace) {
-	    await dataStore.loadWorkspace()
-	  }
 	})
 </script>
 
-<SidebarProvider>
-	{@render children()}
-</SidebarProvider>
+{@render children()}

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { dataStore } from '$lib/data.svelte.js';
+	import { dataStore } from './store.svelte.js';
 	import { cn } from '$lib/components/ui/lib.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
@@ -10,7 +10,7 @@
 		DropdownMenuTrigger
 	} from '$lib/components/ui/dropdown-menu/index.js';
 	import PlusIcon from '@lucide/svelte/icons/plus';
-	import type { Priority } from '$lib/types.js';
+	import type { Priority } from './types.js';
 	import { priorityConfig } from './priority.js';
 
 	let newTodoTitle = $state('');

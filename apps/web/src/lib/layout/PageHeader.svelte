@@ -2,7 +2,7 @@
 	import { SidebarTrigger } from '$lib/components/ui/sidebar/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { themeStore } from '$lib/theme.svelte.js';
+	import { themeStore } from '$lib/theme/store.svelte.js';
 	import SunIcon from '@lucide/svelte/icons/sun';
 	import MoonIcon from '@lucide/svelte/icons/moon';
 

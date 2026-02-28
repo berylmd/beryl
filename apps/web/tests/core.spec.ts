@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { setupTestAdapter, resetWriteHistory, getFileContent, getWriteHistory } from '../src/lib/adapters/test'
+import { setupTestAdapter, resetWriteHistory, getFileContent, getWriteHistory } from '../src/lib/workspace/adapters/test'
 
 test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {

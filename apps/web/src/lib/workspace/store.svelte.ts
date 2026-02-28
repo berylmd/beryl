@@ -1,5 +1,5 @@
 import type { FileAdapter } from '@repo/file-adapter'
-import { detectPlatform } from './platform.js'
+import { detectPlatform } from '$lib/platform.js'
 import { createElectronAdapter } from './adapters/electron.js'
 import { createCapacitorAdapter } from './adapters/capacitor.js'
 

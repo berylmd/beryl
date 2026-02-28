@@ -1,83 +1,10 @@
-import { parseProject } from '@repo/beryljs'
-import type { Todo, List, Priority } from './types.js'
-import { workspace } from './workspace.svelte.js'
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function stripLabels(description: string): string {
-  return description
-    .replace(/\b(p|due):\S+/g, '')
-    .replace(/\s+/g, ' ')
-    .trim()
-}
-
-function normalizeComments(comments: unknown): string {
-  if (!comments) return ''
-  if (Array.isArray(comments)) return (comments as string[]).join('\n')
-  return String(comments)
-}
-
-import type { LabelText } from '@repo/beryljs'
-
-function parsePriority(labels: LabelText[]): Priority {
-  const p = labels.find((l) => l.labels.label === 'p')
-  if (p?.labels.text === 'high') return 'high'
-  if (p?.labels.text === 'low')  return 'low'
-  return 'medium'
-}
-
-function parseDueDate(labels: LabelText[]): string | null {
-  const d = labels.find((l) => l.labels.label === 'due')
-  return d ? d.labels.text : null
-}
-
-function fileNameToListId(filename: string): string {
-  return filename.replace(/\.md$/i, '')
-}
-
-function serializeTodo(todo: Todo): string {
-  let line = todo.completed ? '- [x]' : '- [ ]'
-  line += ` ${todo.title}`
-  if (todo.priority === 'high') line += ' p:high'
-  if (todo.priority === 'low')  line += ' p:low'
-  if (todo.dueDate)             line += ` due:${todo.dueDate}`
-  if (todo.notes) {
-    for (const noteLine of todo.notes.split('\n')) {
-      line += `\n\t>${noteLine}`
-    }
-  }
-  return line
-}
-
-function serializeTodos(todos: Todo[]): string {
-  if (todos.length === 0) return ''
-  return todos.map(serializeTodo).join('\n') + '\n'
-}
-
-function parseFile(content: string, listId: string): Todo[] {
-  let tasks: ReturnType<typeof parseProject>
-  try {
-    tasks = parseProject(content)
-  } catch {
-    // beryljs throws on malformed input — treat the file as empty
-    return []
-  }
-
-  return tasks
-    .filter((t) => t.indent === 0)  // top-level tasks only
-    .map((t) => ({
-      id:        crypto.randomUUID(),
-      title:     stripLabels(t.description),
-      completed: t.checked,
-      priority:  parsePriority(t.labels ?? []),
-      dueDate:   parseDueDate(t.labels ?? []),
-      listId,
-      createdAt: new Date().toISOString(),
-      notes:     normalizeComments(t.comments),
-    }))
-}
-
-// ── Store ─────────────────────────────────────────────────────────────────────
+import type { Todo, List } from './types.js'
+import {
+  fileNameToListId,
+  parseFile,
+  serializeTodos,
+} from './serializer.js'
+import { workspace } from '$lib/workspace/store.svelte.js'   // ← updated in Phase 2
 
 function createDataStore() {
   let todos  = $state<Todo[]>([])

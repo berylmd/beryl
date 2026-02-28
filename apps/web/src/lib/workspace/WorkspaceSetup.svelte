@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { workspace } from '$lib/workspace.svelte.js'
-  import { dataStore } from '$lib/data.svelte.js'
+  import { goto } from '$app/navigation'
+  import { workspace } from './store.svelte.js'
+  import { dataStore } from '$lib/tasks/store.svelte.js'
 
   let picking = $state(false)
   let error   = $state<string | null>(null)
@@ -16,10 +17,11 @@
 
     try {
       const dir = await workspace.fileAdapter.pickDirectory()
-      if (!dir) return  // user cancelled
+      if (!dir) return
 
       workspace.setRootDir(dir)
       await dataStore.loadWorkspace()
+      goto('/tasks')
     } catch (e) {
       error = String(e)
     } finally {

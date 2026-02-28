@@ -1,4 +1,4 @@
-import type { Priority } from '$lib/types.js';
+import type { Priority } from './types.js';
 
 export const priorityConfig: Record<
 	Priority,

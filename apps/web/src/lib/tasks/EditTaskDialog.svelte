@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { Todo, Priority } from '$lib/types.js';
-	import { dataStore } from '$lib/data.svelte.js';
+	import type { Todo, Priority } from './types.js';
+	import { dataStore } from './store.svelte.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import {
