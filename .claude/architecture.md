@@ -15,8 +15,8 @@ red-beryl/
 │   ├── desktop/      Electron shell — wraps the web app for desktop
 │   └── native/       Capacitor shell — wraps the web app for iOS/Android
 ├── packages/
-│   ├── beryljs/      Markdown task parser (Nearley grammar)
-│   └── file-adapter/ FileAdapter interface (to be created)
+│   ├── beryljs/      Markdown task parser (Nearley grammar) — package: @repo/beryljs
+│   └── file-adapter/ FileAdapter interface — package: @repo/file-adapter
 ├── turbo.json
 └── pnpm-workspace.yaml
 ```
@@ -66,8 +66,9 @@ interface FileAdapter {
 
 | Platform | readFile | writeFile | listFiles | watchDir | pickDirectory |
 |---|---|---|---|---|---|
-| Electron | Node `fs.readFile` via IPC | Node `fs.writeFile` via IPC | Node `fs.readdir` via IPC | Node `fs.watch` via IPC | `dialog.showOpenDialog` |
-| Capacitor | `Filesystem.readFile` | `Filesystem.writeFile` | `Filesystem.readdir` | 2s poll | Fixed `Documents/Beryl/` dir |
+| Electron | Node `fs.readFile` via IPC | Node `fs.writeFile` via IPC | Node `fs.readdir` via IPC | Node `fs.watch` via IPC (push model) | `dialog.showOpenDialog` |
+| Capacitor | NOT IMPLEMENTED (stub) | NOT IMPLEMENTED (stub) | NOT IMPLEMENTED (stub) | NOT IMPLEMENTED (stub) | NOT IMPLEMENTED (stub) |
+| Test | In-memory Map | In-memory Map | In-memory Map | Callback set | Fixed `/test-workspace` |
 
 ---
 
@@ -78,30 +79,28 @@ interface FileAdapter {
 1. User toggles checkbox / edits title / changes priority
 2. UI calls dataStore.updateTodo(id, changes)
 3. dataStore updates $state<Todo[]> → Svelte re-renders immediately
-4. dataStore calls scheduleSave(listId) — debounced 300ms
-5. After 300ms: serialize todos to markdown, call fileAdapter.writeFile()
-6. File watcher fires — writeInProgress guard set → IGNORED
-```
-
-### External file change (Dropbox, git pull, text editor)
-```
-1. External app modifies .md file
-2. File watcher callback fires
-3. writeInProgress guard NOT set → proceed
-4. Compute hash of new content vs last known hash
-5. If different: parseFile() → new Todo[] → replace in dataStore
-6. Svelte reactivity re-renders UI
+⚠️  File writes are NOT yet implemented — changes are in-memory only
 ```
 
 ### App startup
 ```
-1. app.html loads → main.ts runs
-2. Detect platform (window.berylDesktop? Capacitor? browser)
-3. Create appropriate FileAdapter
-4. Check localStorage for last rootDir
-5. If found: open workspace automatically
-6. If not: show WorkspaceSetup screen
-7. WorkspaceSetup: user picks folder → loadWorkspace() → loadAllFiles()
+1. app.html loads → +layout.svelte mounts
+2. workspace.init() runs:
+   a. If window.__BERYL_TEST_ADAPTER__ exists → use it (Playwright testing)
+   b. Else: detectPlatform() → create ElectronAdapter or CapacitorAdapter
+   c. Restore lastDir from localStorage
+3. If workspace.hasWorkspace → dataStore.loadWorkspace()
+4. Else → show WorkspaceSetup screen (user picks folder)
+5. WorkspaceSetup calls workspace.setRootDir() → dataStore.loadWorkspace()
+```
+
+### loadWorkspace()
+```
+1. adapter.listFiles(rootDir) → array of filenames
+2. Filter to .md files
+3. For each .md: adapter.readFile() → parseFile() → Todo[]
+4. Update lists[] and todos[] in $state
+5. Default activeListId to first list
 ```
 
 ---
@@ -136,12 +135,12 @@ Each "List" is one `.md` file. File name (without `.md`) is the list's ID and di
 
 ## beryljs Parser
 
-Located at `packages/beryljs/`. Uses Nearley parser.
+Located at `packages/beryljs/`. Uses Nearley parser. Package name: `@repo/beryljs`.
 
 **Public API:**
 ```typescript
 import { parseProject, printProject } from '@repo/beryljs'
-import type { Task } from '@repo/beryljs'
+import type { Task, LabelText } from '@repo/beryljs'
 
 // Parse markdown → Task[]
 const tasks: Task[] = parseProject(markdownString)
@@ -150,26 +149,44 @@ const tasks: Task[] = parseProject(markdownString)
 const md: string = printProject(tasks)
 ```
 
-**Parsed Task shape** (what fields matter):
+**Parsed Task shape** (actual types from `packages/beryljs/types.ts`):
 ```typescript
-{
-  checked: boolean,
-  description: string,        // FULL text including label tokens, e.g. "Buy groceries p:high due:2025-03-01"
-  labels: Array<{             // Parsed label objects
-    label: string,            // key, e.g. "p", "due"
-    value: string,            // value, e.g. "high", "2025-03-01"
-  }>,
-  comments: string | string[],  // text of > comment lines
-  subtasks: Task[],
-  indent: number,             // 0 = top-level
+class Task {
+  type: string        // "task"
+  indent: number      // 0 = top-level
+  line: number        // 1-based line number assigned post-parse
+  checked: boolean
+  description: string // FULL text including label tokens, e.g. "Buy groceries p:high due:2025-03-01"
+  labels: LabelText[] // Parsed labels
+  comments: string[]  // text of > comment lines
+  subtasks: Task[]
 }
+
+interface LabelText {
+  text: string        // raw label string, e.g. "p:high"
+  labels: {
+    label: string     // key, e.g. "p", "due"
+    text: string      // value, e.g. "high", "2025-03-01"
+  }
+}
+```
+
+**Accessing label values** (note the nesting — `labels.labels.label` / `labels.labels.text`):
+```typescript
+// To find priority:
+const p = task.labels.find(l => l.labels.label === 'p')
+const priority = p?.labels.text  // "high" | "low" | undefined
+
+// To find due date:
+const d = task.labels.find(l => l.labels.label === 'due')
+const dueDate = d?.labels.text  // "2025-03-01" | undefined
 ```
 
 **Key behaviors:**
 - `description` includes the label text — must strip labels to get clean title
-- Comments from `\t>text` lines end up in `task.comments`
+- Comments from `\t>text` lines end up in `task.comments` (always `string[]`, not `string | string[]`)
 - Parser throws on malformed input (wrap in try/catch)
-- Empty file or whitespace-only → returns `[]`
+- Empty string or null → returns `[]`
 - `printProject` uses `Task.toString()` which serializes back to markdown
 
 **The data layer does NOT use `printProject`.** It uses a custom serializer because converting UI `Todo[]` back to beryljs `Task[]` is needlessly complex. The serializer is a simple string builder.
@@ -197,7 +214,7 @@ type Todo = {
 type List = {
   id: string           // = filename without .md
   name: string         // = filename without .md (capitalized for display)
-  color: string        // UI preference, stored in localStorage
+  color: string        // UI preference, stored in localStorage (default: '#6366f1')
 }
 ```
 
@@ -252,9 +269,8 @@ This creates a module-level singleton. Components import and use it directly:
 
 ```typescript
 // apps/web/src/lib/platform.ts
-export type Platform = 'electron' | 'capacitor' | 'browser'
-
-export function detectPlatform(): Platform {
+// Note: Platform type is NOT exported
+export function detectPlatform(): 'electron' | 'capacitor' | 'browser' {
   if (typeof (window as any).berylDesktop !== 'undefined') return 'electron'
   if (typeof (window as any).Capacitor !== 'undefined') return 'capacitor'
   return 'browser'
@@ -263,6 +279,8 @@ export function detectPlatform(): Platform {
 
 `window.berylDesktop` is exposed by the Electron preload script. `window.Capacitor` is set by Capacitor's runtime.
 
+**Test adapter shortcut:** `workspace.init()` checks for `window.__BERYL_TEST_ADAPTER__` BEFORE calling `detectPlatform()`. If found, it uses that adapter directly (bypasses all platform logic). This is the Playwright testing hook.
+
 ---
 
 ## Key File Locations
@@ -270,28 +288,37 @@ export function detectPlatform(): Platform {
 ```
 apps/web/src/
 ├── routes/
-│   ├── +layout.svelte        Root layout — platform init goes here
-│   └── +page.svelte          Main todo UI
+│   ├── +layout.svelte        Root layout — workspace.init() + dataStore.loadWorkspace()
+│   └── +page.svelte          Main UI — WorkspaceSetup or task view
 ├── lib/
 │   ├── types.ts              Todo, List, Priority types
-│   ├── todos.svelte.ts       In-memory state (TO BE REPLACED by data.svelte.ts)
+│   ├── data.svelte.ts        File-backed data layer (reads implemented, writes TODO)
+│   ├── workspace.svelte.ts   fileAdapter + rootDir state, platform init
+│   ├── platform.ts           detectPlatform() utility
 │   ├── theme.svelte.ts       Dark/light theme + Capacitor status bar
-│   ├── platform.ts           Platform detection (TO BE CREATED)
-│   ├── workspace.svelte.ts   rootDir + fileAdapter state (TO BE CREATED)
-│   ├── data.svelte.ts        File-backed data layer (TO BE CREATED)
 │   └── adapters/
-│       ├── electron.ts       Electron FileAdapter impl (TO BE CREATED)
-│       └── capacitor.ts      Capacitor FileAdapter impl (TO BE CREATED)
+│       ├── electron.ts       Electron FileAdapter impl (complete)
+│       ├── capacitor.ts      Capacitor FileAdapter impl (stub — all methods throw)
+│       └── test.ts           TestFileAdapter + Playwright helpers
 ├── components/
-│   └── WorkspaceSetup.svelte  Folder picker UI (TO BE CREATED)
+│   ├── WorkspaceSetup.svelte  Folder picker UI
+│   ├── layout/
+│   │   ├── AppSidebar.svelte
+│   │   └── PageHeader.svelte
+│   └── tasks/
+│       ├── TaskItem.svelte
+│       ├── TaskList.svelte
+│       ├── AddTaskForm.svelte
+│       ├── EditTaskDialog.svelte
+│       └── priority.ts
 │
 apps/desktop/src/
-├── main.js                   Electron main process (NEEDS IPC handlers added)
-└── preload.js                Empty — NEEDS contextBridge impl
+├── main.js                   Electron main process — all IPC handlers implemented
+└── preload.js                contextBridge impl — exposes window.berylDesktop
 │
 packages/
 ├── beryljs/                  Nearley parser — DO NOT MODIFY
-└── file-adapter/             FileAdapter interface — TO BE CREATED
+└── file-adapter/             FileAdapter interface (pure TypeScript, no build step)
 ```
 
 ---
@@ -306,19 +333,32 @@ packages/
                   │ IPC (contextBridge)
 ┌─────────────────▼───────────────────────────────────┐
 │  Preload Script (preload.js)                         │
-│  contextBridge.exposeInMainWorld('berylDesktop', {}) │
+│  contextBridge.exposeInMainWorld('berylDesktop', {   │
+│    readFile, writeFile, listFiles,                   │
+│    watchDir, unwatchDir, pickDirectory,              │
+│    onDirChanged                                      │
+│  })                                                  │
 └─────────────────┬───────────────────────────────────┘
                   │ ipcRenderer.invoke → ipcMain.handle
 ┌─────────────────▼───────────────────────────────────┐
 │  Main Process (main.js)                              │
-│  ipcMain.handle('readFile', async (_, p) =>          │
-│    fs.readFile(p, 'utf-8'))                          │
+│  IPC channels (all prefixed beryl:):                 │
+│    beryl:readFile, beryl:writeFile, beryl:listFiles  │
+│    beryl:watchDir, beryl:unwatchDir                  │
+│    beryl:pickDirectory                               │
+│  Push event: beryl:dirChanged (mainWindow → renderer)│
 │                                                      │
 │  Node.js fs API ──> actual files on disk             │
 └─────────────────────────────────────────────────────┘
 ```
 
-**Security:** `contextIsolation: true`, `nodeIntegration: false`. Node APIs never directly exposed to renderer. All access goes through contextBridge.
+**File watcher (push model):**
+- `beryl:watchDir` IPC → `fs.watch(dir)` registered in `watchers` Map
+- On change: `mainWindow.webContents.send('beryl:dirChanged', dir)`
+- Preload: `ipcRenderer.on('beryl:dirChanged', callback)` via `onDirChanged`
+- Renderer: `api.onDirChanged(changedDir => { if (changedDir === dir) callback() })`
+
+**Security:** `contextIsolation: true`, `nodeIntegration: false`. Node APIs never directly exposed to renderer.
 
 ---
 
@@ -341,16 +381,41 @@ packages/
 └──────────────────────────────────────────────────────┘
 ```
 
-**Mobile workspace:** Fixed directory `Documents/Beryl/`. On iOS, this is exposed to the Files app via `Info.plist` (`UIFileSharingEnabled`, `LSSupportsOpeningDocumentsInPlace`). Users sync using iCloud or whatever Files app supports.
+**Status:** The `createCapacitorAdapter()` in `adapters/capacitor.ts` is a stub — all methods return `Promise.reject(...)`. The Capacitor adapter needs to be implemented.
+
+**Mobile workspace:** Fixed directory `Documents/Beryl/`. On iOS, this is exposed to the Files app via `Info.plist` (`UIFileSharingEnabled`, `LSSupportsOpeningDocumentsInPlace`).
 
 ---
 
-## What Is NOT in Scope (Yet)
+## Testing Architecture
 
-- Subtasks in the UI (parser supports them, UI doesn't expose them)
-- Command palette / keyboard-first navigation
-- Tags/labels beyond priority and due date
-- Search across files
-- Sync service (users manage their own sync)
-- Plugin system
-- Parser rewrite (Nearley → zero-dep three-stage pipeline)
+Tests use a `TestFileAdapter` (`apps/web/src/lib/adapters/test.ts`) that stores files in an in-memory `Map<string, string>`.
+
+**How it works:**
+1. In Playwright test, call `setupTestAdapter(page, initialFiles)` before navigating
+2. This calls `page.addInitScript` to set `window.__BERYL_TEST_ADAPTER__` in the browser
+3. `workspace.init()` detects the test adapter and uses it instead of a real platform adapter
+4. After UI interactions, call `getFileContent(page, path)` or `getWriteHistory(page)` to assert
+
+**Test helper functions** exported from `adapters/test.ts`:
+- `setupTestAdapter(page, initialFiles, rootDir?)` — inject adapter into browser
+- `getFileContent(page, path)` — read a file from the test adapter
+- `getWriteHistory(page)` — get all write operations
+- `resetWriteHistory(page)` — clear write history
+- `setFileContent(page, path, content)` — simulate external file change (triggers watchers)
+
+---
+
+## What Is NOT Yet Implemented
+
+- **File writes** — mutations (toggle, add, edit, delete) are in-memory only; no `writeFile` calls yet
+- **File watcher in data layer** — `watchDir` not called; no live reload from external changes
+- **Capacitor adapter** — all methods are stubs that throw
+- **Subtasks in the UI** — parser supports them, UI doesn't expose them
+- **List colors** — default `#6366f1` always; no UI to change it
+- **Command palette / keyboard-first navigation**
+- **Tags/labels beyond priority and due date**
+- **Search across files**
+- **Sync service** (users manage their own sync)
+- **Plugin system**
+- **Parser rewrite** (Nearley → zero-dep three-stage pipeline)

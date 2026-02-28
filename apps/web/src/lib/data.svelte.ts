@@ -35,6 +35,25 @@ function fileNameToListId(filename: string): string {
   return filename.replace(/\.md$/i, '')
 }
 
+function serializeTodo(todo: Todo): string {
+  let line = todo.completed ? '- [x]' : '- [ ]'
+  line += ` ${todo.title}`
+  if (todo.priority === 'high') line += ' p:high'
+  if (todo.priority === 'low')  line += ' p:low'
+  if (todo.dueDate)             line += ` due:${todo.dueDate}`
+  if (todo.notes) {
+    for (const noteLine of todo.notes.split('\n')) {
+      line += `\n\t>${noteLine}`
+    }
+  }
+  return line
+}
+
+function serializeTodos(todos: Todo[]): string {
+  if (todos.length === 0) return ''
+  return todos.map(serializeTodo).join('\n') + '\n'
+}
+
 function parseFile(content: string, listId: string): Todo[] {
   let tasks: ReturnType<typeof parseProject>
   try {
@@ -134,7 +153,34 @@ function createDataStore() {
     }
   }
 
-  // ── Mutations (in-memory only — no file writes yet) ───────────────────────
+  // ── Save timers ───────────────────────────────────────────────────────────
+
+  const saveTimers = new Map<string, ReturnType<typeof setTimeout>>()
+
+  function scheduleSave(listId: string) {
+    const existing = saveTimers.get(listId)
+    if (existing !== undefined) clearTimeout(existing)
+    saveTimers.set(listId, setTimeout(() => {
+      saveTimers.delete(listId)
+      void flushSave(listId)
+    }, 300))
+  }
+
+  async function flushSave(listId: string) {
+    const adapter = workspace.fileAdapter
+    const rootDir = workspace.rootDir
+    if (!adapter || !rootDir) return
+    const listTodos = todos.filter((t) => t.listId === listId)
+    const content   = serializeTodos(listTodos)
+    const path      = `${rootDir}/${listId}.md`
+    try {
+      await adapter.writeFile(path, content)
+    } catch (e) {
+      console.error(`[beryl] Failed to save ${listId}:`, e)
+    }
+  }
+
+  // ── Mutations ─────────────────────────────────────────────────────────────
 
   function setActiveList(id: string | null) {
     activeListId = id
@@ -142,7 +188,10 @@ function createDataStore() {
 
   function toggleTodo(id: string) {
     const todo = todos.find((t) => t.id === id)
-    if (todo) todo.completed = !todo.completed
+    if (todo) {
+      todo.completed = !todo.completed
+      scheduleSave(todo.listId)
+    }
   }
 
   function addTodo(partial: Pick<Todo, 'title' | 'listId'>) {
@@ -156,15 +205,28 @@ function createDataStore() {
       createdAt: new Date().toISOString(),
       notes:     '',
     })
+    scheduleSave(partial.listId)
   }
 
   function updateTodo(id: string, changes: Partial<Todo>) {
     const todo = todos.find((t) => t.id === id)
-    if (todo) Object.assign(todo, changes)
+    if (todo) {
+      const oldListId = todo.listId
+      Object.assign(todo, changes)
+      scheduleSave(oldListId)
+      // If the listId itself changed (moving a task between lists), save both
+      if (changes.listId && changes.listId !== oldListId) {
+        scheduleSave(changes.listId)
+      }
+    }
   }
 
   function deleteTodo(id: string) {
-    todos = todos.filter((t) => t.id !== id)
+    const todo = todos.find((t) => t.id === id)
+    if (todo) {
+      scheduleSave(todo.listId)
+      todos = todos.filter((t) => t.id !== id)
+    }
   }
 
   function addList(name: string) {
