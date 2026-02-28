@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
   import { workspace } from './store.svelte.js'
-  import { dataStore } from '$lib/tasks/store.svelte.js'
+  import { workspaceSync } from '$lib/tasks/sync.js'
 
   let picking = $state(false)
   let error   = $state<string | null>(null)
@@ -20,7 +20,7 @@
       if (!dir) return
 
       workspace.setRootDir(dir)
-      await dataStore.loadWorkspace()
+      await workspaceSync.loadWorkspace()
       goto('/tasks')
     } catch (e) {
       error = String(e)
