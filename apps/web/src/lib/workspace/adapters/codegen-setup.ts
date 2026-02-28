@@ -26,8 +26,7 @@ if (import.meta.env.VITE_CODEGEN === 'true' && typeof window !== 'undefined') {
 
   const watchCallbacks = new Set<() => void>();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).__BERYL_TEST_ADAPTER__ = {
+  window.__BERYL_TEST_ADAPTER__ = {
     async readFile(path: string): Promise<string> {
       const content = files.get(path);
       if (content === undefined) throw new Error(`Codegen adapter: file not found: ${path}`);

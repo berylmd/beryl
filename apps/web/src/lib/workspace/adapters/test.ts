@@ -228,8 +228,7 @@ export async function setupTestAdapter(
       },
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).__BERYL_TEST_ADAPTER__ = adapter;
+    window.__BERYL_TEST_ADAPTER__ = adapter;
   }, serialized);
 }
 
@@ -245,8 +244,7 @@ export async function getFileContent(
   page: import('@playwright/test').Page,
   path: string
 ): Promise<string | undefined> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return page.evaluate((p) => (window as any).__BERYL_TEST_ADAPTER__?.getFileContent(p), path);
+  return page.evaluate((p) => window.__BERYL_TEST_ADAPTER__?.getFileContent(p), path);
 }
 
 /**
@@ -259,8 +257,7 @@ export async function getFileContent(
 export async function getWriteHistory(
   page: import('@playwright/test').Page
 ): Promise<Array<{ path: string; content: string }>> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return page.evaluate(() => (window as any).__BERYL_TEST_ADAPTER__?.getWriteHistory());
+  return page.evaluate(() => window.__BERYL_TEST_ADAPTER__?.getWriteHistory());
 }
 
 /**
@@ -270,8 +267,7 @@ export async function getWriteHistory(
  * @param page - Playwright page object
  */
 export async function resetWriteHistory(page: import('@playwright/test').Page): Promise<void> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return page.evaluate(() => (window as any).__BERYL_TEST_ADAPTER__?.resetHistory());
+  return page.evaluate(() => window.__BERYL_TEST_ADAPTER__?.resetHistory());
 }
 
 /**
@@ -287,9 +283,8 @@ export async function setFileContent(
   path: string,
   content: string
 ): Promise<void> {
-   
   return page.evaluate(
-    ([path, content]) => (window as any).__BERYL_TEST_ADAPTER__?.setFile(path, content),
+    ([path, content]) => window.__BERYL_TEST_ADAPTER__?.setFile(path, content),
     [path, content]
   );
 }

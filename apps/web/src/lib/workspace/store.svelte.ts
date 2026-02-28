@@ -14,8 +14,7 @@ function createWorkspaceStore() {
     // Check for test adapter first (injected by Playwright tests)
     // This must be checked BEFORE platform detection
     if (typeof window !== 'undefined') {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const testAdapter = (window as any).__BERYL_TEST_ADAPTER__;
+      const testAdapter = window.__BERYL_TEST_ADAPTER__;
       if (testAdapter) {
         // console.log('[Workspace] Using test adapter')
         fileAdapter = testAdapter;

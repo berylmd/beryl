@@ -1,8 +1,7 @@
 import type { FileAdapter } from '@repo/file-adapter';
 
 export function createElectronAdapter(): FileAdapter {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const api = (window as any).berylDesktop;
+  const api = window.berylDesktop!;
 
   // Register the IPC listener once. Route to the current active callback.
   let dirChangedCallback: ((dir: string) => void) | null = null;
