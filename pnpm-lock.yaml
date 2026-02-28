@@ -63,6 +63,9 @@ importers:
       '@reforged/maker-appimage':
         specifier: ^5.2.0
         version: 5.2.0
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/typescript-config
       electron:
         specifier: 40.6.0
         version: 40.6.0
