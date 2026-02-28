@@ -1,0 +1,30 @@
+import js from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import eslintConfigPrettier from 'eslint-config-prettier';
+
+export default tseslint.config(
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  eslintConfigPrettier,
+  {
+    // The parser and its generated types use older JS patterns — relax strict rules
+    rules: {
+      'no-var': 'off',
+      'prefer-const': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      'no-prototype-builtins': 'off',
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    },
+  },
+  {
+    // Test files may import vitest helpers without using all of them
+    files: ['test/**'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': 'off',
+    },
+  },
+  {
+    // grammar.ts is auto-generated from parser.ne — do not lint
+    ignores: ['dist/**', 'grammar.ts'],
+  }
+);

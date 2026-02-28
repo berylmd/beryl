@@ -1,25 +1,25 @@
 {
-	"name": "beryl-native",
-	"version": "0.0.1",
-	"devDependencies": {
-		"@capacitor/assets": "^3.0.5",
-		"@capacitor/cli": "^8.1.0",
-		"typescript": "^5.0.0"
-	},
-	"type": "module",
-	"dependencies": {
-		"@capacitor/android": "^8.1.0",
-		"@capacitor/core": "^8.1.0",
-		"@capacitor/ios": "^8.1.0",
-		"@capacitor/status-bar": "^8.0.1",
-		"@repo/ui": "workspace:*"
-	},
-	"scripts": {
-		"copy": "cap copy",
-		"update": "cap update",
-		"build-android": "cap build android",
-		"build-ios": "cap build ios",
-		"dev-android": "cap run android -l --port 5173 --host 127.0.0.1 --forwardPorts 5173:5173",
-		"dev-ios": "cap run ios -l --port 5173 --host localhost"
-	}
+  "name": "beryl-native",
+  "version": "0.0.1",
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.1.0",
+    "typescript": "^5.0.0"
+  },
+  "type": "module",
+  "dependencies": {
+    "@capacitor/android": "^8.1.0",
+    "@capacitor/core": "^8.1.0",
+    "@capacitor/ios": "^8.1.0",
+    "@capacitor/status-bar": "^8.0.1",
+    "@repo/ui": "workspace:*"
+  },
+  "scripts": {
+    "copy": "cap copy",
+    "update": "cap update",
+    "build-android": "cap build android",
+    "build-ios": "cap build ios",
+    "dev-android": "cap run android -l --port 5173 --host 127.0.0.1 --forwardPorts 5173:5173",
+    "dev-ios": "cap run ios -l --port 5173 --host localhost"
+  }
 }

@@ -1,0 +1,9 @@
+node_modules
+dist
+build
+out
+.vite
+.svelte-kit
+pnpm-lock.yaml
+# auto-generated from parser.ne
+packages/beryljs/grammar.ts
