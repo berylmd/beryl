@@ -11,8 +11,7 @@
     "@capacitor/android": "^8.1.0",
     "@capacitor/core": "^8.1.0",
     "@capacitor/ios": "^8.1.0",
-    "@capacitor/status-bar": "^8.0.1",
-    "@repo/ui": "workspace:*"
+    "@capacitor/status-bar": "^8.0.1"
   },
   "scripts": {
     "check-types": "tsc --noEmit",
