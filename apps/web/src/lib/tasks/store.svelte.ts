@@ -1,14 +1,8 @@
 import type { Todo, List } from './types.js'
-import {
-  fileNameToListId,
-  parseFile,
-  serializeTodos,
-} from './serializer.js'
-import { workspace } from '$lib/workspace/store.svelte.js'   // ← updated in Phase 2
 
 function createDataStore() {
-  let todos  = $state<Todo[]>([])
-  let lists  = $state<List[]>([])
+  let todos        = $state<Todo[]>([])
+  let lists        = $state<List[]>([])
   let activeListId = $state<string | null>(null)
   let isLoading    = $state(false)
   let loadError    = $state<string | null>(null)
@@ -28,84 +22,26 @@ function createDataStore() {
     ) as Record<string, number>
   )
 
-  // ── Loading ──────────────────────────────────────────────────────────────────
+  // ── Sync bridge ──────────────────────────────────────────────────────────────
+  // workspaceSync registers a callback here so mutations can schedule saves
+  // without the store knowing about adapters or file I/O.
 
-  async function loadWorkspace() {
-    const adapter = workspace.fileAdapter
-    const rootDir = workspace.rootDir
-    if (!adapter || !rootDir) return
+  let saveCallback: ((listId: string) => void) | null = null
 
-    isLoading  = true
-    loadError  = null
+  function setSaveCallback(fn: (listId: string) => void) {
+    saveCallback = fn
+  }
 
-    try {
-      const filenames = await adapter.listFiles(rootDir)
-      const mdFiles   = filenames.filter((f) => f.toLowerCase().endsWith('.md'))
-
-      const newLists: List[] = []
-      const newTodos: Todo[] = []
-
-      for (const filename of mdFiles) {
-        const listId   = fileNameToListId(filename)
-        const fullPath = `${rootDir}/${filename}`
-
-        let content: string
-        try {
-          content = await adapter.readFile(fullPath)
-        } catch {
-          // File unreadable — skip it
-          continue
-        }
-
-        newLists.push({
-          id:    listId,
-          name:  listId.charAt(0).toUpperCase() + listId.slice(1),
-          color: '#6366f1',  // default color, user can change later
-        })
-
-        newTodos.push(...parseFile(content, listId))
-      }
-
-      lists = newLists
-      todos = newTodos
-
-      // Default to the first list if nothing is selected
-      if (!activeListId && newLists.length > 0) {
-        activeListId = newLists[0].id
-      }
-    } catch (e) {
-      loadError = String(e)
-    } finally {
-      isLoading = false
+  function hydrate(newLists: List[], newTodos: Todo[]) {
+    lists = newLists
+    todos = newTodos
+    if (!activeListId && newLists.length > 0) {
+      activeListId = newLists[0].id
     }
   }
 
-  // ── Save timers ───────────────────────────────────────────────────────────
-
-  const saveTimers = new Map<string, ReturnType<typeof setTimeout>>()
-
-  function scheduleSave(listId: string) {
-    const existing = saveTimers.get(listId)
-    if (existing !== undefined) clearTimeout(existing)
-    saveTimers.set(listId, setTimeout(() => {
-      saveTimers.delete(listId)
-      void flushSave(listId)
-    }, 300))
-  }
-
-  async function flushSave(listId: string) {
-    const adapter = workspace.fileAdapter
-    const rootDir = workspace.rootDir
-    if (!adapter || !rootDir) return
-    const listTodos = todos.filter((t) => t.listId === listId)
-    const content   = serializeTodos(listTodos)
-    const path      = `${rootDir}/${listId}.md`
-    try {
-      await adapter.writeFile(path, content)
-    } catch (e) {
-      console.error(`[beryl] Failed to save ${listId}:`, e)
-    }
-  }
+  function setLoading(v: boolean) { isLoading = v }
+  function setLoadError(e: string | null) { loadError = e }
 
   // ── Mutations ─────────────────────────────────────────────────────────────
 
@@ -117,7 +53,7 @@ function createDataStore() {
     const todo = todos.find((t) => t.id === id)
     if (todo) {
       todo.completed = !todo.completed
-      scheduleSave(todo.listId)
+      saveCallback?.(todo.listId)
     }
   }
 
@@ -131,7 +67,7 @@ function createDataStore() {
       createdAt: new Date().toISOString(),
       notes:     '',
     })
-    scheduleSave(partial.listId)
+    saveCallback?.(partial.listId)
   }
 
   function updateTodo(id: string, changes: Partial<Todo>) {
@@ -139,10 +75,9 @@ function createDataStore() {
     if (todo) {
       const oldListId = todo.listId
       Object.assign(todo, changes)
-      scheduleSave(oldListId)
-      // If the listId itself changed (moving a task between lists), save both
+      saveCallback?.(oldListId)
       if (changes.listId && changes.listId !== oldListId) {
-        scheduleSave(changes.listId)
+        saveCallback?.(changes.listId)
       }
     }
   }
@@ -150,7 +85,7 @@ function createDataStore() {
   function deleteTodo(id: string) {
     const todo = todos.find((t) => t.id === id)
     if (todo) {
-      scheduleSave(todo.listId)
+      saveCallback?.(todo.listId)
       todos = todos.filter((t) => t.id !== id)
     }
   }
@@ -175,7 +110,10 @@ function createDataStore() {
     get counts()       { return counts },
     get isLoading()    { return isLoading },
     get loadError()    { return loadError },
-    loadWorkspace,
+    setSaveCallback,
+    hydrate,
+    setLoading,
+    setLoadError,
     setActiveList,
     toggleTodo,
     addTodo,

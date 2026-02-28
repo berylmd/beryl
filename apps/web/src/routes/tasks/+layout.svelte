@@ -3,7 +3,7 @@
 	import { SidebarProvider } from '$lib/components/ui/sidebar/index.js'
 	import AppSidebar from '$lib/layout/AppSidebar.svelte'
 	import { workspace } from '$lib/workspace/store.svelte.js'
-	import { dataStore } from '$lib/tasks/store.svelte.js'
+	import { workspaceSync } from '$lib/tasks/sync.js'
 
 	let { children } = $props()
 
@@ -13,7 +13,7 @@
 			goto('/setup', { replaceState: true })
 			return
 		}
-		void dataStore.loadWorkspace()
+		void workspaceSync.loadWorkspace()
 	})
 </script>
 

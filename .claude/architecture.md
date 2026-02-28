@@ -77,9 +77,11 @@ interface FileAdapter {
 ### User edits a task in the UI
 ```
 1. User toggles checkbox / edits title / changes priority
-2. UI calls dataStore.updateTodo(id, changes)
+2. UI calls dataStore.toggleTodo(id) / addTodo(...) / updateTodo(...) / deleteTodo(id)
 3. dataStore updates $state<Todo[]> → Svelte re-renders immediately
-⚠️  File writes are NOT yet implemented — changes are in-memory only
+4. Mutation calls saveCallback(listId) — registered by workspaceSync at startup
+5. workspaceSync.scheduleSave(listId) debounces 300ms → flushSave(listId)
+6. flushSave serializes todos for that list → adapter.writeFile(path, content)
 ```
 
 ### App startup
@@ -89,18 +91,29 @@ interface FileAdapter {
    a. If window.__BERYL_TEST_ADAPTER__ exists → use it (Playwright testing)
    b. Else: detectPlatform() → create ElectronAdapter or CapacitorAdapter
    c. Restore lastDir from localStorage
-3. If workspace.hasWorkspace → dataStore.loadWorkspace()
+3. If workspace.hasWorkspace → workspaceSync.loadWorkspace()
 4. Else → show WorkspaceSetup screen (user picks folder)
-5. WorkspaceSetup calls workspace.setRootDir() → dataStore.loadWorkspace()
+5. WorkspaceSetup calls workspace.setRootDir() → workspaceSync.loadWorkspace()
 ```
 
-### loadWorkspace()
+### workspaceSync.loadWorkspace()
 ```
 1. adapter.listFiles(rootDir) → array of filenames
 2. Filter to .md files
 3. For each .md: adapter.readFile() → parseFile() → Todo[]
-4. Update lists[] and todos[] in $state
-5. Default activeListId to first list
+4. dataStore.hydrate(newLists, newTodos) — bulk update of reactive state
+5. Default activeListId to first list (inside hydrate)
+6. adapter.watchDir(rootDir, callback) → watch for external changes
+```
+
+### File watcher — external change handling
+```
+1. OS notifies adapter → watchDir callback fires
+2. workspaceSync checks: is a save in-flight, or did we just finish saving?
+   - activeSaves > 0 → ignore (write in progress)
+   - Date.now() - lastSaveCompletedAt < 1500ms → ignore (our own write, suppress reload)
+   - saveTimers pending → ignore (debounce not flushed yet)
+3. Otherwise: call loadWorkspace() → full re-read from disk
 ```
 
 ---
@@ -288,37 +301,45 @@ export function detectPlatform(): 'electron' | 'capacitor' | 'browser' {
 ```
 apps/web/src/
 ├── routes/
-│   ├── +layout.svelte        Root layout — workspace.init() + dataStore.loadWorkspace()
-│   └── +page.svelte          Main UI — WorkspaceSetup or task view
+│   ├── +layout.svelte             Root layout — workspace.init()
+│   ├── +page.svelte               Redirects to /tasks or /setup
+│   ├── tasks/
+│   │   ├── +layout.svelte         Calls workspaceSync.loadWorkspace() on ready
+│   │   └── +page.svelte           Main task view
+│   └── setup/
+│       └── +page.svelte           Workspace setup page
 ├── lib/
-│   ├── types.ts              Todo, List, Priority types
-│   ├── data.svelte.ts        File-backed data layer (reads implemented, writes TODO)
-│   ├── workspace.svelte.ts   fileAdapter + rootDir state, platform init
-│   ├── platform.ts           detectPlatform() utility
-│   ├── theme.svelte.ts       Dark/light theme + Capacitor status bar
-│   └── adapters/
-│       ├── electron.ts       Electron FileAdapter impl (complete)
-│       ├── capacitor.ts      Capacitor FileAdapter impl (stub — all methods throw)
-│       └── test.ts           TestFileAdapter + Playwright helpers
-├── components/
-│   ├── WorkspaceSetup.svelte  Folder picker UI
+│   ├── platform.ts                detectPlatform() utility
+│   ├── tasks/
+│   │   ├── store.svelte.ts        Pure reactive state + mutations (dataStore)
+│   │   ├── sync.ts                File I/O orchestration (workspaceSync)
+│   │   ├── serializer.ts          parseFile() + serializeTodos() — Todo ↔ markdown
+│   │   ├── types.ts               Todo, List, Priority types
+│   │   ├── AddTaskForm.svelte
+│   │   ├── EditTaskDialog.svelte
+│   │   ├── TaskItem.svelte
+│   │   ├── TaskList.svelte
+│   │   └── priority.ts            Priority display helpers
+│   ├── workspace/
+│   │   ├── store.svelte.ts        fileAdapter + rootDir state, platform init (workspace)
+│   │   ├── WorkspaceSetup.svelte  Folder picker UI — calls workspaceSync.loadWorkspace()
+│   │   └── adapters/
+│   │       ├── electron.ts        Electron FileAdapter impl (complete)
+│   │       ├── capacitor.ts       Capacitor FileAdapter impl (stub — all methods throw)
+│   │       └── test.ts            TestFileAdapter + Playwright helpers
 │   ├── layout/
 │   │   ├── AppSidebar.svelte
 │   │   └── PageHeader.svelte
-│   └── tasks/
-│       ├── TaskItem.svelte
-│       ├── TaskList.svelte
-│       ├── AddTaskForm.svelte
-│       ├── EditTaskDialog.svelte
-│       └── priority.ts
+│   └── theme/
+│       └── store.svelte.ts        Dark/light theme + Capacitor status bar
 │
 apps/desktop/src/
-├── main.js                   Electron main process — all IPC handlers implemented
-└── preload.js                contextBridge impl — exposes window.berylDesktop
+├── main.js                        Electron main process — all IPC handlers implemented
+└── preload.js                     contextBridge impl — exposes window.berylDesktop
 │
 packages/
-├── beryljs/                  Nearley parser — DO NOT MODIFY
-└── file-adapter/             FileAdapter interface (pure TypeScript, no build step)
+├── beryljs/                       Nearley parser — DO NOT MODIFY
+└── file-adapter/                  FileAdapter interface (pure TypeScript, no build step)
 ```
 
 ---
@@ -389,7 +410,7 @@ packages/
 
 ## Testing Architecture
 
-Tests use a `TestFileAdapter` (`apps/web/src/lib/adapters/test.ts`) that stores files in an in-memory `Map<string, string>`.
+Tests use a `TestFileAdapter` (`apps/web/src/lib/workspace/adapters/test.ts`) that stores files in an in-memory `Map<string, string>`.
 
 **How it works:**
 1. In Playwright test, call `setupTestAdapter(page, initialFiles)` before navigating
@@ -408,8 +429,6 @@ Tests use a `TestFileAdapter` (`apps/web/src/lib/adapters/test.ts`) that stores 
 
 ## What Is NOT Yet Implemented
 
-- **File writes** — mutations (toggle, add, edit, delete) are in-memory only; no `writeFile` calls yet
-- **File watcher in data layer** — `watchDir` not called; no live reload from external changes
 - **Capacitor adapter** — all methods are stubs that throw
 - **Subtasks in the UI** — parser supports them, UI doesn't expose them
 - **List colors** — default `#6366f1` always; no UI to change it
