@@ -23,6 +23,7 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
       'no-prototype-builtins': 'off',
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/ban-ts-comment': ['error', { 'ts-ignore': 'allow-with-description' }],
     },
   },
   {
