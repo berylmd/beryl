@@ -7,3 +7,8 @@ out
 pnpm-lock.yaml
 # auto-generated from parser.ne
 packages/beryljs/grammar.ts
+# Native app build directories
+apps/native/android/app/build
+apps/native/android/.gradle
+apps/native/ios/DerivedData
+apps/native/ios/Pods

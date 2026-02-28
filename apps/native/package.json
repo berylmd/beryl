@@ -16,7 +16,7 @@
   },
   "scripts": {
     "check-types": "tsc --noEmit",
-    "lint": "tsc --noEmit",
+    "lint": "prettier --check . && tsc --noEmit",
     "copy": "cap copy",
     "update": "cap update",
     "build-android": "cap build android",

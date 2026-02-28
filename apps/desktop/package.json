@@ -11,7 +11,7 @@
     "build": "electron-forge make",
     "publish": "electron-forge publish",
     "check-types": "tsc --noEmit",
-    "lint": "eslint . && tsc --noEmit"
+    "lint": "eslint . && prettier --check . && tsc --noEmit"
   },
   "keywords": [],
   "author": {
