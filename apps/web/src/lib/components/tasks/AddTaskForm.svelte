@@ -20,7 +20,7 @@
 	function handleAddTodo(e: SubmitEvent) {
 		e.preventDefault();
 		if (newTodoTitle.trim()) {
-			const listId = dataStore.activeListId ?? dataStore.lists[0]?.id ?? 'personal';
+			const listId = dataStore.activeListId ?? dataStore.lists[0]?.id;
 			dataStore.addTodo({ title: newTodoTitle.trim(), listId });
 			newTodoTitle = '';
 			newTodoPriority = 'medium';

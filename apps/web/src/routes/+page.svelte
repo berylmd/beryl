@@ -36,7 +36,9 @@
 		<PageHeader title={dataStore.activeListId ?? "Tasks" } />
 
 		<div class="flex flex-1 flex-col p-4 md:p-6">
+			{#if dataStore.activeListId}
 			<AddTaskForm />
+			{/if}
 			<TaskList todos={dataStore.filteredTodos} {activeFilter} onedit={openEdit} />
 		</div>
 	</SidebarInset>

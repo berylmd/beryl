@@ -208,3 +208,17 @@ test.describe('Write-back functionality', () => {
   })
 
 })
+
+test.describe('empty start', () => {
+  test('test', async ({ page }) => {
+
+    await setupTestAdapter(page, {
+    })
+
+    await page.goto('/');
+
+    await expect(page.getByRole('textbox', { name: 'Add a task... press Enter to' })).not.toBeVisible()
+    // await .fill('test');
+    // await page.getByRole('button', { name: 'Add' }).click();
+  });
+})
