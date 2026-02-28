@@ -47,7 +47,8 @@ function createDataStore() {
     }
 
     loadInProgress = true
-    isLoading  = true
+    const isInitialLoad = lists.length === 0
+    if (isInitialLoad) isLoading = true
     loadError  = null
 
     try {
@@ -88,8 +89,9 @@ function createDataStore() {
 
       // Watch for external changes (e.g. sync, external editor)
       unwatchWorkspace = await adapter.watchDir(rootDir, () => {
-        // Skip if we're currently saving (avoid reloading our own writes)
-        if (saveTimers.size === 0 && activeSaves === 0 && !loadInProgress) {
+        const isSelfWrite = activeSaves > 0 ||
+          Date.now() - lastSaveCompletedAt < SELF_WRITE_WINDOW_MS
+        if (!isSelfWrite && saveTimers.size === 0 && !loadInProgress) {
           void loadWorkspace()
         }
       })
@@ -97,7 +99,7 @@ function createDataStore() {
       loadError = String(e)
     } finally {
       loadInProgress = false
-      isLoading = false
+      if (isInitialLoad) isLoading = false
     }
   }
 
@@ -105,6 +107,8 @@ function createDataStore() {
 
   const saveTimers = new Map<string, ReturnType<typeof setTimeout>>()
   let activeSaves = 0
+  let lastSaveCompletedAt = 0
+  const SELF_WRITE_WINDOW_MS = 1500
 
   function scheduleSave(listId: string) {
     const existing = saveTimers.get(listId)
@@ -129,6 +133,7 @@ function createDataStore() {
       console.error(`[beryl] Failed to save ${listId}:`, e)
     } finally {
       activeSaves--
+      lastSaveCompletedAt = Date.now()
     }
   }
 
