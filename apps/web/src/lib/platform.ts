@@ -1,7 +1,7 @@
-type Platform = 'electron' | 'capacitor' | 'browser'
+type Platform = 'electron' | 'capacitor' | 'browser';
 
 export function detectPlatform(): Platform {
-  if (typeof (window as any).berylDesktop !== 'undefined') return 'electron'
-  if (typeof (window as any).Capacitor !== 'undefined') return 'capacitor'
-  return 'browser'
+  if ('berylDesktop' in window) return 'electron';
+  if ('Capacitor' in window) return 'capacitor';
+  return 'browser';
 }

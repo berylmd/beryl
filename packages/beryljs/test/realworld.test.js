@@ -1,12 +1,11 @@
-import { beforeEach, describe, it, assert, expect, test } from 'vitest'
+import { beforeEach, describe, it, assert, expect, test } from 'vitest';
 
-import { initParser, parseProject, printProject } from '../dist/index.js'
-import { Task } from '../dist/types.js'
+import { initParser, parseProject, printProject } from '../dist/index.js';
+import { Task } from '../dist/types.js';
 
-describe("real world:",() => {
+describe('real world:', () => {
   it('should return empty on empty', () => {
-
-    var result = parseProject("");
+    var result = parseProject('');
     assert.deepEqual(result, []);
 
     result = parseProject(null);
@@ -20,5 +19,5 @@ describe("real world:",() => {
   //
   //   var result = parseProject("bad");
   // });
-})
+});
 // next step, check the parsed value and see if its right
