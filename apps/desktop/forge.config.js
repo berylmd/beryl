@@ -10,6 +10,7 @@ module.exports = {
     extraResource: [
       '../web/build',
     ],
+    osxSign: {},
   },
   rebuildConfig: {},
   makers: [

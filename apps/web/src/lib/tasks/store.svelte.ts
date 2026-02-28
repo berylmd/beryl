@@ -1,64 +1,10 @@
-import { parseProject } from '@repo/beryljs'
-import type { Todo, List, Priority } from './types.js'
-import { workspace } from './workspace.svelte.js'
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function stripLabels(description: string): string {
-  return description
-    .replace(/\b(p|due):\S+/g, '')
-    .replace(/\s+/g, ' ')
-    .trim()
-}
-
-function normalizeComments(comments: unknown): string {
-  if (!comments) return ''
-  if (Array.isArray(comments)) return (comments as string[]).join('\n')
-  return String(comments)
-}
-
-import type { LabelText } from '@repo/beryljs'
-
-function parsePriority(labels: LabelText[]): Priority {
-  const p = labels.find((l) => l.labels.label === 'p')
-  if (p?.labels.text === 'high') return 'high'
-  if (p?.labels.text === 'low')  return 'low'
-  return 'medium'
-}
-
-function parseDueDate(labels: LabelText[]): string | null {
-  const d = labels.find((l) => l.labels.label === 'due')
-  return d ? d.labels.text : null
-}
-
-function fileNameToListId(filename: string): string {
-  return filename.replace(/\.md$/i, '')
-}
-
-function parseFile(content: string, listId: string): Todo[] {
-  let tasks: ReturnType<typeof parseProject>
-  try {
-    tasks = parseProject(content)
-  } catch {
-    // beryljs throws on malformed input — treat the file as empty
-    return []
-  }
-
-  return tasks
-    .filter((t) => t.indent === 0)  // top-level tasks only
-    .map((t) => ({
-      id:        crypto.randomUUID(),
-      title:     stripLabels(t.description),
-      completed: t.checked,
-      priority:  parsePriority(t.labels ?? []),
-      dueDate:   parseDueDate(t.labels ?? []),
-      listId,
-      createdAt: new Date().toISOString(),
-      notes:     normalizeComments(t.comments),
-    }))
-}
-
-// ── Store ─────────────────────────────────────────────────────────────────────
+import type { Todo, List } from './types.js'
+import {
+  fileNameToListId,
+  parseFile,
+  serializeTodos,
+} from './serializer.js'
+import { workspace } from '$lib/workspace/store.svelte.js'   // ← updated in Phase 2
 
 function createDataStore() {
   let todos  = $state<Todo[]>([])
@@ -134,7 +80,34 @@ function createDataStore() {
     }
   }
 
-  // ── Mutations (in-memory only — no file writes yet) ───────────────────────
+  // ── Save timers ───────────────────────────────────────────────────────────
+
+  const saveTimers = new Map<string, ReturnType<typeof setTimeout>>()
+
+  function scheduleSave(listId: string) {
+    const existing = saveTimers.get(listId)
+    if (existing !== undefined) clearTimeout(existing)
+    saveTimers.set(listId, setTimeout(() => {
+      saveTimers.delete(listId)
+      void flushSave(listId)
+    }, 300))
+  }
+
+  async function flushSave(listId: string) {
+    const adapter = workspace.fileAdapter
+    const rootDir = workspace.rootDir
+    if (!adapter || !rootDir) return
+    const listTodos = todos.filter((t) => t.listId === listId)
+    const content   = serializeTodos(listTodos)
+    const path      = `${rootDir}/${listId}.md`
+    try {
+      await adapter.writeFile(path, content)
+    } catch (e) {
+      console.error(`[beryl] Failed to save ${listId}:`, e)
+    }
+  }
+
+  // ── Mutations ─────────────────────────────────────────────────────────────
 
   function setActiveList(id: string | null) {
     activeListId = id
@@ -142,7 +115,10 @@ function createDataStore() {
 
   function toggleTodo(id: string) {
     const todo = todos.find((t) => t.id === id)
-    if (todo) todo.completed = !todo.completed
+    if (todo) {
+      todo.completed = !todo.completed
+      scheduleSave(todo.listId)
+    }
   }
 
   function addTodo(partial: Pick<Todo, 'title' | 'listId'>) {
@@ -150,21 +126,33 @@ function createDataStore() {
       id:        crypto.randomUUID(),
       title:     partial.title,
       completed: false,
-      priority:  'medium',
       dueDate:   null,
       listId:    partial.listId,
       createdAt: new Date().toISOString(),
       notes:     '',
     })
+    scheduleSave(partial.listId)
   }
 
   function updateTodo(id: string, changes: Partial<Todo>) {
     const todo = todos.find((t) => t.id === id)
-    if (todo) Object.assign(todo, changes)
+    if (todo) {
+      const oldListId = todo.listId
+      Object.assign(todo, changes)
+      scheduleSave(oldListId)
+      // If the listId itself changed (moving a task between lists), save both
+      if (changes.listId && changes.listId !== oldListId) {
+        scheduleSave(changes.listId)
+      }
+    }
   }
 
   function deleteTodo(id: string) {
-    todos = todos.filter((t) => t.id !== id)
+    const todo = todos.find((t) => t.id === id)
+    if (todo) {
+      scheduleSave(todo.listId)
+      todos = todos.filter((t) => t.id !== id)
+    }
   }
 
   function addList(name: string) {

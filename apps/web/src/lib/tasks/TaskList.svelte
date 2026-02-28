@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Todo } from '$lib/types.js';
+	import type { Todo } from './types.js';
 	import TaskItem from './TaskItem.svelte';
 	import ClipboardListIcon from '@lucide/svelte/icons/clipboard-list';
 

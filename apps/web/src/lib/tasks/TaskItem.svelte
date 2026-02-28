@@ -1,9 +1,8 @@
 <script lang="ts">
-	import type { Todo } from '$lib/types.js';
-	import { dataStore } from '$lib/data.svelte.js';
+	import type { Todo } from './types.js';
+	import { dataStore } from './store.svelte.js';
 	import { cn } from '$lib/components/ui/lib.js';
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
-	import { Badge } from '$lib/components/ui/badge/index.js';
 	import {
 		DropdownMenu,
 		DropdownMenuContent,
@@ -15,8 +14,6 @@
 	import MoreHorizontalIcon from '@lucide/svelte/icons/more-horizontal';
 	import PencilIcon from '@lucide/svelte/icons/pencil';
 	import Trash2Icon from '@lucide/svelte/icons/trash-2';
-	import { priorityConfig } from './priority.js';
-
 	let { todo, onedit }: { todo: Todo; onedit: (id: string) => void } = $props();
 
 	function formatDate(dateStr: string | null) {
@@ -82,10 +79,6 @@
 	</div>
 
 	<div class="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-		<Badge variant={priorityConfig[todo.priority].variant} class="text-xs">
-			{priorityConfig[todo.priority].label}
-		</Badge>
-
 		<DropdownMenu>
 			<DropdownMenuTrigger>
 				{#snippet child({ props })}

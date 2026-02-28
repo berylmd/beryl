@@ -1,5 +1,5 @@
 import type { FileAdapter } from '@repo/file-adapter'
-import { detectPlatform } from './platform.js'
+import { detectPlatform } from '$lib/platform.js'
 import { createElectronAdapter } from './adapters/electron.js'
 import { createCapacitorAdapter } from './adapters/capacitor.js'
 
@@ -16,7 +16,7 @@ function createWorkspaceStore() {
     if (typeof window !== 'undefined') {
       const testAdapter = (window as any).__BERYL_TEST_ADAPTER__
       if (testAdapter) {
-        console.log('[Workspace] Using test adapter')
+        // console.log('[Workspace] Using test adapter')
         fileAdapter = testAdapter
         rootDir = '/test-workspace'
         isReady = true

@@ -32,6 +32,18 @@
     "test:watch": {
       "cache": false,
       "persistent": true
-    }
+    },
+    "test:ui": {
+      "cache": false,
+      "persistent": true
+    },
+    "test:codegen": {
+      "cache": false,
+      "persistent": true
+    },
+    "dev:codegen": {
+      "cache": false,
+      "persistent": true
+    },
   }
 }

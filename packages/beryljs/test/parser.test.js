@@ -267,7 +267,7 @@ describe("comments", () => {
     const sub = `- [ ] value\n\t>comment`
     const result = parseProject(sub);
     assert.equal(result.length, 1)
-    console.log(result)
+    // console.log(result)
     assert.equal(result[0].comments.length, 1)
     assert.equal(result[0].comments.join("\n"), "comment")
   });

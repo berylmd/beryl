@@ -20,8 +20,6 @@ export function parseProject(project: string) {
 	const parser = initParser();
 	parser.feed(project)
 
-	console.log("parser results", parser.results)
-
 	const result = new taskList(parser.results[0]);
 	return result.collectAllSubtasks();
 }
