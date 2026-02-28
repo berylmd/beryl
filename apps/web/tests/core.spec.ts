@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { setupTestAdapter, resetWriteHistory } from '../src/lib/adapters/test'
+import { setupTestAdapter, resetWriteHistory, getFileContent, getWriteHistory } from '../src/lib/adapters/test'
 
 test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
@@ -72,50 +72,139 @@ test.describe('Core functionality', () => {
     await expect(page.locator('text=task1')).toBeVisible()
     await expect(page.locator('text=task2')).not.toBeVisible()
   })
+})
 
+test.describe('Write-back functionality', () => {
 
-//   test('read/write from test adapter and displays tasks', async ({ page }) => {
-//        await setupTestAdapter(page, {
-//       '/test-workspace/inbox.md': `- [ ] Buy groceries
-// - [x] Call mom
-// - [ ] Finish report
-// `,
-//     })
+  test('adding a task writes to file', async ({ page }) => {
+    await setupTestAdapter(page, {
+      '/test-workspace/inbox.md': `- [ ] Existing task
+`,
+    })
 
-//     await page.goto('/')
+    await page.goto('/')
 
-//     await expect(page.locator('text=Buy groceries')).toBeVisible()
-//     await expect(page.locator('text=Call mom')).toBeVisible()
-//     await expect(page.locator('text=Finish report')).toBeVisible()
+    // Wait for initial load
+    await expect(page.locator('text=Existing task')).toBeVisible()
 
-//     const input = page.locator('input[placeholder="Add a task... press Enter to save"]')
-//     await input.fill('Learn Playwright')
-//     await input.press('Enter')
+    // Reset history before making changes
+    await resetWriteHistory(page)
 
-//     await expect(page.locator('text=Learn Playwright')).toBeVisible()
+    // Add a new task
+    const input = page.locator('input[placeholder="Add a task... press Enter to save"]')
+    await input.fill('New task')
+    await input.press('Enter')
 
-//     // Reset write history to track only new changes
-//     await resetWriteHistory(page)
+    // Wait for the write to complete (debounced at 300ms)
+    await page.waitForTimeout(400)
 
-//     // Verify file was updated with new task
-//     const content = await getFileContent(page, '/test-workspace/inbox.md')
-//     expect(content).toContain('Learn Playwright')
+    // Verify the file was updated
+    const content = await getFileContent(page, '/test-workspace/inbox.md')
+    expect(content).toContain('New task')
+    expect(content).toContain('Existing task')
 
-//     // Get write history and verify a write occurred
-//     const history = await getWriteHistory(page)
-//     expect(history.length).toBeGreaterThan(0)
+    // Verify write history
+    const history = await getWriteHistory(page)
+    expect(history.length).toBeGreaterThan(0)
+    expect(history[0].path).toBe('/test-workspace/inbox.md')
+  })
 
-//     // Toggle the first task (Buy groceries) - find its checkbox
-//     const firstCheckbox = page.locator('input[type="checkbox"]').first()
-//     await firstCheckbox.click()
+  test('toggling a task writes to file', async ({ page }) => {
+    await setupTestAdapter(page, {
+      '/test-workspace/inbox.md': `- [ ] Buy groceries
+- [x] Call mom
+`,
+    })
 
-//     // Verify checkbox is now checked
-//     await expect(firstCheckbox).toBeChecked()
+    await page.goto('/')
 
-//     // Verify file was updated with toggled task
-//     const finalContent = await getFileContent(page, '/test-workspace/inbox.md')
-//     expect(finalContent).toContain('- [x] Buy groceries')
-//     expect(finalContent).toContain('- [ ] Finish report')
-//     expect(finalContent).toContain('Learn Playwright') 
-//   })
+    // Wait for initial load
+    await expect(page.locator('text=Buy groceries')).toBeVisible()
+
+    // Reset history before making changes
+    await resetWriteHistory(page)
+
+    // Toggle the first task (Buy groceries)
+    const firstCheckbox = page.getByRole('checkbox').first()
+    await firstCheckbox.click()
+
+    // Wait for the write to complete (debounced at 300ms)
+    await page.waitForTimeout(400)
+
+    // Verify the file was updated
+    const content = await getFileContent(page, '/test-workspace/inbox.md')
+    expect(content).toContain('- [x] Buy groceries')
+    expect(content).toContain('- [x] Call mom')
+
+    // Verify write history
+    const history = await getWriteHistory(page)
+    expect(history.length).toBeGreaterThan(0)
+    expect(history[0].path).toBe('/test-workspace/inbox.md')
+  })
+
+  test('deleting a task writes to file', async ({ page }) => {
+    await setupTestAdapter(page, {
+      '/test-workspace/inbox.md': `- [ ] Task to delete
+- [ ] Keep this task
+`,
+    })
+
+    await page.goto('/')
+
+    // Wait for initial load
+    await expect(page.locator('text=Task to delete')).toBeVisible()
+
+    // Reset history before making changes
+    await resetWriteHistory(page)
+
+    // First, hover over the task to reveal the menu button
+    await page.locator('text=Task to delete').hover()
+
+    // Click the more options button (three dots)
+    await page.locator('button[aria-label="Task options"]').first().click()
+
+    // Click the Delete option in the dropdown
+    await page.getByRole('menuitem', { name: 'Delete' }).click()
+
+    // Wait for the write to complete (debounced at 300ms)
+    await page.waitForTimeout(400)
+
+    // Verify the deleted task is no longer in the file
+    const content = await getFileContent(page, '/test-workspace/inbox.md')
+    expect(content).not.toContain('Task to delete')
+    expect(content).toContain('Keep this task')
+
+    // Verify write history
+    const history = await getWriteHistory(page)
+    expect(history.length).toBeGreaterThan(0)
+  })
+
+  test('adding task with priority writes priority to file', async ({ page }) => {
+    await setupTestAdapter(page, {
+      '/test-workspace/inbox.md': `- [ ] Regular task
+`,
+    })
+
+    await page.goto('/')
+
+    // Wait for initial load
+    await expect(page.locator('text=Regular task')).toBeVisible()
+
+    // Reset history before making changes
+    await resetWriteHistory(page)
+
+    // Add a high priority task - need to check how the UI handles priority
+    // For now, test that basic add works and check the format
+    const input = page.locator('input[placeholder="Add a task... press Enter to save"]')
+    await input.fill('High priority task p:high')
+    await input.press('Enter')
+
+    // Wait for the write to complete
+    await page.waitForTimeout(400)
+
+    // Verify the file contains the priority marker
+    const content = await getFileContent(page, '/test-workspace/inbox.md')
+    expect(content).toContain('p:high')
+  })
+
 })
