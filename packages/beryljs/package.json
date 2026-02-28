@@ -13,7 +13,7 @@
     "generate": "nearleyc parser.ne -o grammar.ts",
     "build": "pnpm run generate && tsc",
     "dev": "concurrently \"nodemon --watch parser.ne --ext ne --exec 'pnpm run generate'\" \"tsc --watch\"",
-    "lint": "eslint . --max-warnings 0"
+    "lint": "eslint . --max-warnings 0 && tsc --noEmit"
   },
   "author": "",
   "license": "ISC",

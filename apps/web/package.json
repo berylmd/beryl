@@ -15,7 +15,7 @@
     "test:codegen": "playwright install chromium && playwright codegen http://localhost:5173",
     "codegen": "turbo run dev:codegen test:codegen --filter=@repo/web",
     "dev:codegen": "VITE_CODEGEN=true vite dev",
-    "lint": "eslint ."
+    "lint": "eslint . && svelte-check --tsconfig ./tsconfig.json"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

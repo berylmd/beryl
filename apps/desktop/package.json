@@ -10,7 +10,8 @@
     "package": "electron-forge package",
     "build": "electron-forge make",
     "publish": "electron-forge publish",
-    "lint": "eslint ."
+    "check-types": "tsc --noEmit",
+    "lint": "eslint . && tsc --noEmit"
   },
   "keywords": [],
   "author": {
@@ -35,6 +36,7 @@
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.1",
     "globals": "^16.5.0",
+    "typescript": "^5.0.0",
     "typescript-eslint": "^8.50.0"
   },
   "dependencies": {
