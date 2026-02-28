@@ -30,11 +30,23 @@ function createDataStore() {
 
   // ── Loading ──────────────────────────────────────────────────────────────────
 
+  let unwatchWorkspace: (() => void) | null = null
+  let loadInProgress = false  // plain var, not $state — must not be read in $effect call chains
+
   async function loadWorkspace() {
     const adapter = workspace.fileAdapter
     const rootDir = workspace.rootDir
     if (!adapter || !rootDir) return
 
+    if (loadInProgress) return  // prevent concurrent loads
+
+    // Tear down previous watcher before re-loading
+    if (unwatchWorkspace) {
+      unwatchWorkspace()
+      unwatchWorkspace = null
+    }
+
+    loadInProgress = true
     isLoading  = true
     loadError  = null
 
@@ -73,9 +85,18 @@ function createDataStore() {
       if (!activeListId && newLists.length > 0) {
         activeListId = newLists[0].id
       }
+
+      // Watch for external changes (e.g. sync, external editor)
+      unwatchWorkspace = await adapter.watchDir(rootDir, () => {
+        // Skip if we're currently saving (avoid reloading our own writes)
+        if (saveTimers.size === 0 && activeSaves === 0 && !loadInProgress) {
+          void loadWorkspace()
+        }
+      })
     } catch (e) {
       loadError = String(e)
     } finally {
+      loadInProgress = false
       isLoading = false
     }
   }
@@ -83,6 +104,7 @@ function createDataStore() {
   // ── Save timers ───────────────────────────────────────────────────────────
 
   const saveTimers = new Map<string, ReturnType<typeof setTimeout>>()
+  let activeSaves = 0
 
   function scheduleSave(listId: string) {
     const existing = saveTimers.get(listId)
@@ -100,10 +122,13 @@ function createDataStore() {
     const listTodos = todos.filter((t) => t.listId === listId)
     const content   = serializeTodos(listTodos)
     const path      = `${rootDir}/${listId}.md`
+    activeSaves++
     try {
       await adapter.writeFile(path, content)
     } catch (e) {
       console.error(`[beryl] Failed to save ${listId}:`, e)
+    } finally {
+      activeSaves--
     }
   }
 

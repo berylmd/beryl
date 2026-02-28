@@ -3,6 +3,12 @@ import type { FileAdapter } from '@repo/file-adapter'
 export function createElectronAdapter(): FileAdapter {
   const api = (window as any).berylDesktop
 
+  // Register the IPC listener once. Route to the current active callback.
+  let dirChangedCallback: ((dir: string) => void) | null = null
+  api.onDirChanged((changedDir: string) => {
+    dirChangedCallback?.(changedDir)
+  })
+
   return {
     readFile: (path) =>
       api.readFile(path),
@@ -15,10 +21,13 @@ export function createElectronAdapter(): FileAdapter {
 
     watchDir: (dir, callback) => {
       api.watchDir(dir)
-      api.onDirChanged((changedDir: string) => {
+      dirChangedCallback = (changedDir: string) => {
         if (changedDir === dir) callback()
+      }
+      return Promise.resolve(() => {
+        dirChangedCallback = null
+        api.unwatchDir(dir)
       })
-      return Promise.resolve(() => api.unwatchDir(dir))
     },
 
     pickDirectory: () =>
