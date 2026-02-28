@@ -61,6 +61,19 @@ test.describe('Core functionality', () => {
   })
 
 
+  test('multiple projects only have their own task', async ({ page }) => {
+    await setupTestAdapter(page, {
+      '/test-workspace/project1.md': `- [ ] task1`,
+      '/test-workspace/project2.md': `- [ ] task2`
+    })
+
+    await page.goto('/')
+
+    await expect(page.locator('text=task1')).toBeVisible()
+    await expect(page.locator('text=task2')).not.toBeVisible()
+  })
+
+
 //   test('read/write from test adapter and displays tasks', async ({ page }) => {
 //        await setupTestAdapter(page, {
 //       '/test-workspace/inbox.md': `- [ ] Buy groceries
