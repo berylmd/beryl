@@ -115,7 +115,7 @@ describe("writing", () => {
     const parsed = parseProject(input);
     const output = printProject(parsed);
 
-    console.log(input,parsed,output)
+    // console.log(input,parsed,output)
 
     assert.equal(output, input)
   })

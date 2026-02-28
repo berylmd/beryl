@@ -16,7 +16,7 @@ function createWorkspaceStore() {
     if (typeof window !== 'undefined') {
       const testAdapter = (window as any).__BERYL_TEST_ADAPTER__
       if (testAdapter) {
-        console.log('[Workspace] Using test adapter')
+        // console.log('[Workspace] Using test adapter')
         fileAdapter = testAdapter
         rootDir = '/test-workspace'
         isReady = true
