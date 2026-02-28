@@ -10,7 +10,10 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
     "test": "turbo run test",
-    "test:watch": "turbo run test:watch"
+    "test:watch": "turbo run test:watch",
+    "test:ui": "turbo run test:ui --filter=@repo/web",
+    "test:codegen": "turbo run dev:codegen test:codegen --filter=@repo/web",
+    "dev:codegen": "turbo run dev:codegen --filter=@repo/web"
   },
   "devDependencies": {
     "prettier": "^3.7.4",

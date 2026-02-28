@@ -11,7 +11,10 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test": "playwright install chromium && playwright test",
-		"test:ui": "playwright install chromium && playwright test --ui"
+		"test:ui": "playwright install chromium && playwright test --ui",
+		"test:codegen": "playwright install chromium && playwright codegen http://localhost:5173",
+		"codegen": "turbo run dev:codegen test:codegen --filter=@repo/web",
+		"dev:codegen": "VITE_CODEGEN=true vite dev"
 	},
 	"devDependencies": {
 		"@fontsource/fira-mono": "^5.2.7",
