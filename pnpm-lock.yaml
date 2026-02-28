@@ -106,6 +106,9 @@ importers:
       '@capacitor/cli':
         specifier: ^8.1.0
         version: 8.1.0
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/typescript-config
       typescript:
         specifier: ^5.0.0
         version: 5.9.3
