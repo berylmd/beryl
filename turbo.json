@@ -8,7 +8,8 @@
       "outputs": [".next/**", "!.next/cache/**", "dist/**", "build/**", "out/**", ".vite/**"]
     },
     "lint": {
-      "dependsOn": ["^lint"]
+      "dependsOn": ["^lint"],
+      "inputs": ["$TURBO_DEFAULT$", "eslint.config.*", ".eslintrc*", ".prettierrc*"]
     },
     "check-types": {
       "dependsOn": ["^check-types"]
@@ -44,6 +45,6 @@
     "dev:codegen": {
       "cache": false,
       "persistent": true
-    },
+    }
   }
 }

@@ -1,36 +1,32 @@
-import type { FileAdapter } from '@repo/file-adapter'
+import type { FileAdapter } from '@repo/file-adapter';
 
 export function createElectronAdapter(): FileAdapter {
-  const api = (window as any).berylDesktop
+  const api = window.berylDesktop!;
 
   // Register the IPC listener once. Route to the current active callback.
-  let dirChangedCallback: ((dir: string) => void) | null = null
+  let dirChangedCallback: ((dir: string) => void) | null = null;
   api.onDirChanged((changedDir: string) => {
-    dirChangedCallback?.(changedDir)
-  })
+    dirChangedCallback?.(changedDir);
+  });
 
   return {
-    readFile: (path) =>
-      api.readFile(path),
+    readFile: (path) => api.readFile(path),
 
-    writeFile: (path, content) =>
-      api.writeFile(path, content),
+    writeFile: (path, content) => api.writeFile(path, content),
 
-    listFiles: (dir) =>
-      api.listFiles(dir),
+    listFiles: (dir) => api.listFiles(dir),
 
     watchDir: (dir, callback) => {
-      api.watchDir(dir)
+      api.watchDir(dir);
       dirChangedCallback = (changedDir: string) => {
-        if (changedDir === dir) callback()
-      }
+        if (changedDir === dir) callback();
+      };
       return Promise.resolve(() => {
-        dirChangedCallback = null
-        api.unwatchDir(dir)
-      })
+        dirChangedCallback = null;
+        api.unwatchDir(dir);
+      });
     },
 
-    pickDirectory: () =>
-      api.pickDirectory(),
-  }
+    pickDirectory: () => api.pickDirectory(),
+  };
 }

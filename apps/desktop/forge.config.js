@@ -7,9 +7,7 @@ module.exports = {
     executableName: 'beryl',
     asar: true,
     icon: './assets/icon',
-    extraResource: [
-      '../web/build',
-    ],
+    extraResource: ['../web/build'],
     osxSign: {},
   },
   rebuildConfig: {},

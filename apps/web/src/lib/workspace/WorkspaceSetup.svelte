@@ -1,31 +1,31 @@
 <script lang="ts">
-  import { goto } from '$app/navigation'
-  import { workspace } from './store.svelte.js'
-  import { workspaceSync } from '$lib/tasks/sync.js'
+  import { goto } from '$app/navigation';
+  import { workspace } from './store.svelte.js';
+  import { workspaceSync } from '$lib/tasks/sync.js';
 
-  let picking = $state(false)
-  let error   = $state<string | null>(null)
+  let picking = $state(false);
+  let error = $state<string | null>(null);
 
   async function openWorkspace() {
     if (!workspace.fileAdapter) {
-      error = 'No file adapter available. Open this app in Electron or on a mobile device.'
-      return
+      error = 'No file adapter available. Open this app in Electron or on a mobile device.';
+      return;
     }
 
-    picking = true
-    error   = null
+    picking = true;
+    error = null;
 
     try {
-      const dir = await workspace.fileAdapter.pickDirectory()
-      if (!dir) return
+      const dir = await workspace.fileAdapter.pickDirectory();
+      if (!dir) return;
 
-      workspace.setRootDir(dir)
-      await workspaceSync.loadWorkspace()
-      goto('/tasks')
+      workspace.setRootDir(dir);
+      await workspaceSync.loadWorkspace();
+      goto('/tasks');
     } catch (e) {
-      error = String(e)
+      error = String(e);
     } finally {
-      picking = false
+      picking = false;
     }
   }
 </script>

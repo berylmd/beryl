@@ -86,84 +86,85 @@ Create `src/lib/tasks/serializer.ts` with the following content — these are th
 functions extracted from `data.svelte.ts`, with the import updated to use `./types.js`:
 
 ```typescript
-import { parseProject } from '@repo/beryljs'
-import type { LabelText } from '@repo/beryljs'
-import type { Todo, Priority } from './types.js'
+import { parseProject } from '@repo/beryljs';
+import type { LabelText } from '@repo/beryljs';
+import type { Todo, Priority } from './types.js';
 
 export function stripLabels(description: string): string {
   return description
     .replace(/\b(p|due):\S+/g, '')
     .replace(/\s+/g, ' ')
-    .trim()
+    .trim();
 }
 
 export function normalizeComments(comments: unknown): string {
-  if (!comments) return ''
-  if (Array.isArray(comments)) return (comments as string[]).join('\n')
-  return String(comments)
+  if (!comments) return '';
+  if (Array.isArray(comments)) return (comments as string[]).join('\n');
+  return String(comments);
 }
 
 export function parsePriority(labels: LabelText[]): Priority {
-  const p = labels.find((l) => l.labels.label === 'p')
-  if (p?.labels.text === 'high') return 'high'
-  if (p?.labels.text === 'low')  return 'low'
-  return 'medium'
+  const p = labels.find((l) => l.labels.label === 'p');
+  if (p?.labels.text === 'high') return 'high';
+  if (p?.labels.text === 'low') return 'low';
+  return 'medium';
 }
 
 export function parseDueDate(labels: LabelText[]): string | null {
-  const d = labels.find((l) => l.labels.label === 'due')
-  return d ? d.labels.text : null
+  const d = labels.find((l) => l.labels.label === 'due');
+  return d ? d.labels.text : null;
 }
 
 export function fileNameToListId(filename: string): string {
-  return filename.replace(/\.md$/i, '')
+  return filename.replace(/\.md$/i, '');
 }
 
 export function serializeTodo(todo: Todo): string {
-  let line = todo.completed ? '- [x]' : '- [ ]'
-  line += ` ${todo.title}`
-  if (todo.priority === 'high') line += ' p:high'
-  if (todo.priority === 'low')  line += ' p:low'
-  if (todo.dueDate)             line += ` due:${todo.dueDate}`
+  let line = todo.completed ? '- [x]' : '- [ ]';
+  line += ` ${todo.title}`;
+  if (todo.priority === 'high') line += ' p:high';
+  if (todo.priority === 'low') line += ' p:low';
+  if (todo.dueDate) line += ` due:${todo.dueDate}`;
   if (todo.notes) {
     for (const noteLine of todo.notes.split('\n')) {
-      line += `\n\t>${noteLine}`
+      line += `\n\t>${noteLine}`;
     }
   }
-  return line
+  return line;
 }
 
 export function serializeTodos(todos: Todo[]): string {
-  if (todos.length === 0) return ''
-  return todos.map(serializeTodo).join('\n') + '\n'
+  if (todos.length === 0) return '';
+  return todos.map(serializeTodo).join('\n') + '\n';
 }
 
 export function parseFile(content: string, listId: string): Todo[] {
-  let tasks: ReturnType<typeof parseProject>
+  let tasks: ReturnType<typeof parseProject>;
   try {
-    tasks = parseProject(content)
+    tasks = parseProject(content);
   } catch {
-    return []
+    return [];
   }
 
   return tasks
     .filter((t) => t.indent === 0)
     .map((t) => ({
-      id:        crypto.randomUUID(),
-      title:     stripLabels(t.description),
+      id: crypto.randomUUID(),
+      title: stripLabels(t.description),
       completed: t.checked,
-      priority:  parsePriority(t.labels ?? []),
-      dueDate:   parseDueDate(t.labels ?? []),
+      priority: parsePriority(t.labels ?? []),
+      dueDate: parseDueDate(t.labels ?? []),
       listId,
       createdAt: new Date().toISOString(),
-      notes:     normalizeComments(t.comments),
-    }))
+      notes: normalizeComments(t.comments),
+    }));
 }
 ```
 
 ### Step 1.4 — Create `lib/tasks/store.svelte.ts`
 
 Create `src/lib/tasks/store.svelte.ts`. This is `data.svelte.ts` with three changes:
+
 1. Remove the inline helper functions (now in serializer.ts)
 2. Import them from `./serializer.js`
 3. Import types from `./types.js`
@@ -173,20 +174,16 @@ Create `src/lib/tasks/store.svelte.ts`. This is `data.svelte.ts` with three chan
    in Phase 2 Step 2.1.)
 
 ```typescript
-import type { Todo, List } from './types.js'
-import {
-  fileNameToListId,
-  parseFile,
-  serializeTodos,
-} from './serializer.js'
-import { workspace } from '$lib/workspace.svelte.js'   // ← updated in Phase 2
+import type { Todo, List } from './types.js';
+import { fileNameToListId, parseFile, serializeTodos } from './serializer.js';
+import { workspace } from '$lib/workspace.svelte.js'; // ← updated in Phase 2
 
 function createDataStore() {
   // ... identical to data.svelte.ts from line 82 onward
   // (copy the entire createDataStore function body exactly)
 }
 
-export const dataStore = createDataStore()
+export const dataStore = createDataStore();
 ```
 
 Full instruction: copy everything from `data.svelte.ts` starting at line 82 (`function createDataStore()`),
@@ -197,20 +194,24 @@ remove the helper function declarations above (lines 5–78), and add the import
 For each file below, copy to the new path and update its imports as noted:
 
 **`src/lib/tasks/TaskItem.svelte`** (from `src/lib/components/tasks/TaskItem.svelte`):
+
 - Change `import type { Todo } from '$lib/types.js'` → `import type { Todo } from './types.js'`
 - Change `import { dataStore } from '$lib/data.svelte.js'` → `import { dataStore } from './store.svelte.js'`
 - Change `import { priorityConfig } from './priority.js'` → stays `./priority.js` (same folder)
 
 **`src/lib/tasks/TaskList.svelte`** (from `src/lib/components/tasks/TaskList.svelte`):
+
 - Change `import type { Todo } from '$lib/types.js'` → `import type { Todo } from './types.js'`
 - Change `import TaskItem from './TaskItem.svelte'` → stays `./TaskItem.svelte`
 
 **`src/lib/tasks/AddTaskForm.svelte`** (from `src/lib/components/tasks/AddTaskForm.svelte`):
+
 - Change `import { dataStore } from '$lib/data.svelte.js'` → `import { dataStore } from './store.svelte.js'`
 - Change `import type { Priority } from '$lib/types.js'` → `import type { Priority } from './types.js'`
 - Change `import { priorityConfig } from './priority.js'` → stays `./priority.js`
 
 **`src/lib/tasks/EditTaskDialog.svelte`** (from `src/lib/components/tasks/EditTaskDialog.svelte`):
+
 - Change `import type { Todo, Priority } from '$lib/types.js'` → `import type { Todo, Priority } from './types.js'`
 - Change `import { dataStore } from '$lib/data.svelte.js'` → `import { dataStore } from './store.svelte.js'`
 
@@ -219,12 +220,15 @@ For each file below, copy to the new path and update its imports as noted:
 Update these files to import from the new `$lib/tasks/` paths:
 
 **`src/lib/components/layout/AppSidebar.svelte`**:
+
 - Change `import { dataStore } from '$lib/data.svelte.js'` → `import { dataStore } from '$lib/tasks/store.svelte.js'`
 
 **`src/routes/+layout.svelte`**:
+
 - Change `import { dataStore } from '$lib/data.svelte.js'` → `import { dataStore } from '$lib/tasks/store.svelte.js'`
 
 **`src/routes/+page.svelte`**:
+
 - Change `import { dataStore } from '$lib/data.svelte.js'` → `import { dataStore } from '$lib/tasks/store.svelte.js'`
 - Change `import type { Todo } from '$lib/types.js'` → `import type { Todo } from '$lib/tasks/types.js'`
 - Change `import WorkspaceSetup from '$lib/components/WorkspaceSetup.svelte'` → stays for now (updated in Phase 2)
@@ -241,6 +245,7 @@ cd apps/web && pnpm run test
 ```
 
 Fix any failures. Then commit:
+
 ```
 git add -A
 git commit -m "refactor: create lib/tasks feature (store, serializer, components)"
@@ -253,6 +258,7 @@ git commit -m "refactor: create lib/tasks feature (store, serializer, components
 ### Step 2.1 — Create `lib/workspace/adapters/`
 
 Copy these four files verbatim (no import changes needed — they don't import each other):
+
 - `src/lib/adapters/electron.ts` → `src/lib/workspace/adapters/electron.ts`
 - `src/lib/adapters/capacitor.ts` → `src/lib/workspace/adapters/capacitor.ts`
 - `src/lib/adapters/test.ts` → `src/lib/workspace/adapters/test.ts`
@@ -261,6 +267,7 @@ Copy these four files verbatim (no import changes needed — they don't import e
 ### Step 2.2 — Create `lib/workspace/store.svelte.ts`
 
 Copy `src/lib/workspace.svelte.ts` to `src/lib/workspace/store.svelte.ts` and update imports:
+
 - Change `import { createElectronAdapter } from './adapters/electron.js'` → stays `./adapters/electron.js` (same relative path)
 - Change `import { createCapacitorAdapter } from './adapters/capacitor.js'` → stays `./adapters/capacitor.js`
 - Change `import { detectPlatform } from './platform.js'` → `import { detectPlatform } from '$lib/platform.js'`
@@ -269,23 +276,28 @@ Copy `src/lib/workspace.svelte.ts` to `src/lib/workspace/store.svelte.ts` and up
 
 Copy `src/lib/components/WorkspaceSetup.svelte` to `src/lib/workspace/WorkspaceSetup.svelte`
 and update imports:
+
 - Change `import { workspace } from '$lib/workspace.svelte.js'` → `import { workspace } from './store.svelte.js'`
 - Change `import { dataStore } from '$lib/data.svelte.js'` → `import { dataStore } from '$lib/tasks/store.svelte.js'`
 
 ### Step 2.4 — Update all consumers of old workspace/adapter paths
 
 **`src/lib/tasks/store.svelte.ts`**:
+
 - Change `import { workspace } from '$lib/workspace.svelte.js'` → `import { workspace } from '$lib/workspace/store.svelte.js'`
 
 **`src/routes/+layout.svelte`**:
+
 - Change `import { workspace } from '$lib/workspace.svelte.js'` → `import { workspace } from '$lib/workspace/store.svelte.js'`
 - Change `import '$lib/adapters/codegen-setup.js'` → `import '$lib/workspace/adapters/codegen-setup.js'`
 
 **`src/routes/+page.svelte`**:
+
 - Change `import { workspace } from '$lib/workspace.svelte.js'` → `import { workspace } from '$lib/workspace/store.svelte.js'`
 - Change `import WorkspaceSetup from '$lib/components/WorkspaceSetup.svelte'` → `import WorkspaceSetup from '$lib/workspace/WorkspaceSetup.svelte'`
 
 **`apps/web/tests/core.spec.ts`**:
+
 - Change `import { setupTestAdapter, ... } from '../src/lib/adapters/test'`
   → `import { setupTestAdapter, ... } from '../src/lib/workspace/adapters/test'`
 
@@ -296,6 +308,7 @@ cd apps/web && pnpm run test
 ```
 
 Fix any failures. Then commit:
+
 ```
 git add -A
 git commit -m "refactor: create lib/workspace feature (store, adapters, WorkspaceSetup)"
@@ -313,21 +326,25 @@ Copy `src/lib/theme.svelte.ts` verbatim to `src/lib/theme/store.svelte.ts`. No i
 
 Copy `src/lib/components/layout/PageHeader.svelte` to `src/lib/layout/PageHeader.svelte`
 and update imports:
+
 - Change `import { themeStore } from '$lib/theme.svelte.js'` → `import { themeStore } from '$lib/theme/store.svelte.js'`
 
 ### Step 3.3 — Create `lib/layout/AppSidebar.svelte`
 
 Copy `src/lib/components/layout/AppSidebar.svelte` to `src/lib/layout/AppSidebar.svelte`.
 The only import that needs updating:
+
 - Change `import { dataStore } from '$lib/tasks/store.svelte.js'` — already updated in Phase 1 Step 1.6,
   but the file being copied is the original. Make sure the copy uses `'$lib/tasks/store.svelte.js'`.
 
 ### Step 3.4 — Update all consumers of old theme/layout paths
 
 **`src/routes/+layout.svelte`**:
+
 - Change `import { themeStore } from '$lib/theme.svelte.js'` → `import { themeStore } from '$lib/theme/store.svelte.js'`
 
 **`src/routes/+page.svelte`**:
+
 - Change `import AppSidebar from '../lib/components/layout/AppSidebar.svelte'` → `import AppSidebar from '$lib/layout/AppSidebar.svelte'`
 - Change `import PageHeader from '$lib/components/layout/PageHeader.svelte'` → `import PageHeader from '$lib/layout/PageHeader.svelte'`
 
@@ -338,6 +355,7 @@ cd apps/web && pnpm run test
 ```
 
 Fix any failures. Then commit:
+
 ```
 git add -A
 git commit -m "refactor: create lib/theme and lib/layout features"
@@ -372,6 +390,7 @@ cd apps/web && pnpm run test
 ```
 
 Fix any failures. Then commit:
+
 ```
 git add -A
 git commit -m "refactor: delete old flat-structure files after moving to features"
@@ -384,27 +403,28 @@ git commit -m "refactor: delete old flat-structure files after moving to feature
 ### Step 5.1 — Update `routes/+layout.svelte`
 
 Replace its content with the following. Key changes:
+
 - Remove `SidebarProvider` (moves to tasks layout)
 - Remove `dataStore` import (data loading moves to tasks layout)
 - Keep `workspace.init()` in `onMount`
 
 ```svelte
 <script lang="ts">
-  import '$lib/workspace/adapters/codegen-setup.js'
-  import { themeStore } from '$lib/theme/store.svelte.js'
-  import { onMount } from 'svelte'
-  import { workspace } from '$lib/workspace/store.svelte.js'
-  import './layout.css'
+  import '$lib/workspace/adapters/codegen-setup.js';
+  import { themeStore } from '$lib/theme/store.svelte.js';
+  import { onMount } from 'svelte';
+  import { workspace } from '$lib/workspace/store.svelte.js';
+  import './layout.css';
 
-  let { children } = $props()
+  let { children } = $props();
 
   $effect(() => {
-    themeStore.init()
-  })
+    themeStore.init();
+  });
 
   onMount(() => {
-    workspace.init()
-  })
+    workspace.init();
+  });
 </script>
 
 {@render children()}
@@ -417,14 +437,14 @@ to either `/tasks` or `/setup` depending on whether a workspace folder is set:
 
 ```svelte
 <script lang="ts">
-  import { goto } from '$app/navigation'
-  import { workspace } from '$lib/workspace/store.svelte.js'
+  import { goto } from '$app/navigation';
+  import { workspace } from '$lib/workspace/store.svelte.js';
 
   $effect(() => {
     if (workspace.isReady) {
-      goto(workspace.hasWorkspace ? '/tasks' : '/setup', { replaceState: true })
+      goto(workspace.hasWorkspace ? '/tasks' : '/setup', { replaceState: true });
     }
-  })
+  });
 </script>
 ```
 
@@ -432,7 +452,7 @@ to either `/tasks` or `/setup` depending on whether a workspace folder is set:
 
 ```svelte
 <script lang="ts">
-  import WorkspaceSetup from '$lib/workspace/WorkspaceSetup.svelte'
+  import WorkspaceSetup from '$lib/workspace/WorkspaceSetup.svelte';
 </script>
 
 <svelte:head>
@@ -449,33 +469,33 @@ Add one import and one `goto` call:
 
 ```svelte
 <script lang="ts">
-  import { goto } from '$app/navigation'        // ← add this
-  import { workspace } from './store.svelte.js'
-  import { dataStore } from '$lib/tasks/store.svelte.js'
+  import { goto } from '$app/navigation'; // ← add this
+  import { workspace } from './store.svelte.js';
+  import { dataStore } from '$lib/tasks/store.svelte.js';
 
-  let picking = $state(false)
-  let error   = $state<string | null>(null)
+  let picking = $state(false);
+  let error = $state<string | null>(null);
 
   async function openWorkspace() {
     if (!workspace.fileAdapter) {
-      error = 'No file adapter available. Open this app in Electron or on a mobile device.'
-      return
+      error = 'No file adapter available. Open this app in Electron or on a mobile device.';
+      return;
     }
 
-    picking = true
-    error   = null
+    picking = true;
+    error = null;
 
     try {
-      const dir = await workspace.fileAdapter.pickDirectory()
-      if (!dir) return
+      const dir = await workspace.fileAdapter.pickDirectory();
+      if (!dir) return;
 
-      workspace.setRootDir(dir)
-      await dataStore.loadWorkspace()
-      goto('/tasks')                            // ← add this
+      workspace.setRootDir(dir);
+      await dataStore.loadWorkspace();
+      goto('/tasks'); // ← add this
     } catch (e) {
-      error = String(e)
+      error = String(e);
     } finally {
-      picking = false
+      picking = false;
     }
   }
 </script>
@@ -490,22 +510,22 @@ the workspace store is ready:
 
 ```svelte
 <script lang="ts">
-  import { goto } from '$app/navigation'
-  import { SidebarProvider } from '$lib/components/ui/sidebar/index.js'
-  import AppSidebar from '$lib/layout/AppSidebar.svelte'
-  import { workspace } from '$lib/workspace/store.svelte.js'
-  import { dataStore } from '$lib/tasks/store.svelte.js'
+  import { goto } from '$app/navigation';
+  import { SidebarProvider } from '$lib/components/ui/sidebar/index.js';
+  import AppSidebar from '$lib/layout/AppSidebar.svelte';
+  import { workspace } from '$lib/workspace/store.svelte.js';
+  import { dataStore } from '$lib/tasks/store.svelte.js';
 
-  let { children } = $props()
+  let { children } = $props();
 
   $effect(() => {
-    if (!workspace.isReady) return
+    if (!workspace.isReady) return;
     if (!workspace.hasWorkspace) {
-      goto('/setup', { replaceState: true })
-      return
+      goto('/setup', { replaceState: true });
+      return;
     }
-    void dataStore.loadWorkspace()
-  })
+    void dataStore.loadWorkspace();
+  });
 </script>
 
 <SidebarProvider>
@@ -520,19 +540,19 @@ Move the task UI from the old `+page.svelte` into this new page:
 
 ```svelte
 <script lang="ts">
-  import { SidebarInset } from '$lib/components/ui/sidebar/index.js'
-  import type { Todo } from '$lib/tasks/types.js'
-  import { dataStore } from '$lib/tasks/store.svelte.js'
-  import PageHeader from '$lib/layout/PageHeader.svelte'
-  import AddTaskForm from '$lib/tasks/AddTaskForm.svelte'
-  import TaskList from '$lib/tasks/TaskList.svelte'
-  import EditTaskDialog from '$lib/tasks/EditTaskDialog.svelte'
+  import { SidebarInset } from '$lib/components/ui/sidebar/index.js';
+  import type { Todo } from '$lib/tasks/types.js';
+  import { dataStore } from '$lib/tasks/store.svelte.js';
+  import PageHeader from '$lib/layout/PageHeader.svelte';
+  import AddTaskForm from '$lib/tasks/AddTaskForm.svelte';
+  import TaskList from '$lib/tasks/TaskList.svelte';
+  import EditTaskDialog from '$lib/tasks/EditTaskDialog.svelte';
 
-  let activeFilter = $state<'all' | 'today' | 'upcoming' | 'completed'>('all')
-  let editingTodo = $state<Todo | null>(null)
+  let activeFilter = $state<'all' | 'today' | 'upcoming' | 'completed'>('all');
+  let editingTodo = $state<Todo | null>(null);
 
   function openEdit(id: string) {
-    editingTodo = dataStore.todos.find((t) => t.id === id) ?? null
+    editingTodo = dataStore.todos.find((t) => t.id === id) ?? null;
   }
 </script>
 
@@ -541,12 +561,10 @@ Move the task UI from the old `+page.svelte` into this new page:
 </svelte:head>
 
 {#if dataStore.isLoading}
-  <div class="flex items-center justify-center h-screen text-muted-foreground">
-    Loading…
-  </div>
+  <div class="flex items-center justify-center h-screen text-muted-foreground">Loading…</div>
 {:else}
   <SidebarInset>
-    <PageHeader title={dataStore.activeListId ?? "Tasks"} />
+    <PageHeader title={dataStore.activeListId ?? 'Tasks'} />
 
     <div class="flex flex-1 flex-col p-4 md:p-6">
       {#if dataStore.activeListId}
@@ -571,6 +589,7 @@ cd apps/web && pnpm run test
 ```
 
 Fix any failures. Then commit:
+
 ```
 git add -A
 git commit -m "refactor: split routes into /setup and /tasks"

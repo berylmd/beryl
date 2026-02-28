@@ -50,6 +50,7 @@ brew install openjdk@17
 echo 'export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"' >> ~/.zshrc
 source ~/.zshrc
 ```
+
 manually install xcode
 manually install android studio
 
@@ -62,4 +63,4 @@ pnpm run dev-ios
 
 ## Build
 
-not a thing until app store keys are set up.  probably fastlane too
+not a thing until app store keys are set up. probably fastlane too

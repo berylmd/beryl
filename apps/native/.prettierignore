@@ -1,0 +1,6 @@
+# Build artifacts
+android/app/build
+android/.gradle
+android/capacitor-cordova-android-plugins/build
+ios/DerivedData
+ios/Pods

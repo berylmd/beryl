@@ -41,6 +41,12 @@ jobs:
       - name: Cache turbo build setup
         uses: rharkor/caching-for-turbo@v1.8
 
+      - name: Run ESLint
+        run: pnpm run lint
+
+      - name: Check formatting
+        run: pnpm run format:check
+
       - name: Run tests
         run: pnpm run test
 

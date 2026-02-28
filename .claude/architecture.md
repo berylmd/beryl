@@ -22,6 +22,7 @@ red-beryl/
 ```
 
 **Package dependency graph:**
+
 ```
 apps/web  ──────────────────> packages/beryljs
 apps/web  ──────────────────> packages/file-adapter
@@ -33,17 +34,17 @@ apps/native   ──────────────> (loads apps/web/build/
 
 ## Technology Stack
 
-| Layer | Technology | Notes |
-|---|---|---|
-| UI framework | Svelte 5 | Uses runes: `$state`, `$derived`, `$effect` |
-| Meta-framework | SvelteKit 2 | Static adapter (no server) |
-| Styling | Tailwind CSS v4 | Uses `@import "tailwindcss"` not config file |
-| Components | shadcn-svelte (bits-ui) | Headless + Tailwind — source lives in repo |
-| Icons | lucide-svelte | |
-| Parser | packages/beryljs | Nearley grammar, parses markdown tasks |
-| Desktop shell | Electron (electron-forge) | Node.js file I/O via IPC |
-| Mobile shell | Capacitor 8 | `@capacitor/filesystem` for file I/O |
-| Build orchestration | Turborepo | `pnpm dev` runs all apps |
+| Layer               | Technology                | Notes                                        |
+| ------------------- | ------------------------- | -------------------------------------------- |
+| UI framework        | Svelte 5                  | Uses runes: `$state`, `$derived`, `$effect`  |
+| Meta-framework      | SvelteKit 2               | Static adapter (no server)                   |
+| Styling             | Tailwind CSS v4           | Uses `@import "tailwindcss"` not config file |
+| Components          | shadcn-svelte (bits-ui)   | Headless + Tailwind — source lives in repo   |
+| Icons               | lucide-svelte             |                                              |
+| Parser              | packages/beryljs          | Nearley grammar, parses markdown tasks       |
+| Desktop shell       | Electron (electron-forge) | Node.js file I/O via IPC                     |
+| Mobile shell        | Capacitor 8               | `@capacitor/filesystem` for file I/O         |
+| Build orchestration | Turborepo                 | `pnpm dev` runs all apps                     |
 
 ---
 
@@ -54,27 +55,28 @@ The **FileAdapter** is the keystone abstraction. The UI never touches the filesy
 ```typescript
 // packages/file-adapter/src/index.ts
 interface FileAdapter {
-  readFile(path: string): Promise<string>
-  writeFile(path: string, content: string): Promise<void>
-  listFiles(dir: string): Promise<string[]>
-  watchDir(dir: string, callback: () => void): Promise<() => void>
-  pickDirectory(): Promise<string | null>
+  readFile(path: string): Promise<string>;
+  writeFile(path: string, content: string): Promise<void>;
+  listFiles(dir: string): Promise<string[]>;
+  watchDir(dir: string, callback: () => void): Promise<() => void>;
+  pickDirectory(): Promise<string | null>;
 }
 ```
 
 **Implementations:**
 
-| Platform | readFile | writeFile | listFiles | watchDir | pickDirectory |
-|---|---|---|---|---|---|
-| Electron | Node `fs.readFile` via IPC | Node `fs.writeFile` via IPC | Node `fs.readdir` via IPC | Node `fs.watch` via IPC (push model) | `dialog.showOpenDialog` |
-| Capacitor | NOT IMPLEMENTED (stub) | NOT IMPLEMENTED (stub) | NOT IMPLEMENTED (stub) | NOT IMPLEMENTED (stub) | NOT IMPLEMENTED (stub) |
-| Test | In-memory Map | In-memory Map | In-memory Map | Callback set | Fixed `/test-workspace` |
+| Platform  | readFile                   | writeFile                   | listFiles                 | watchDir                             | pickDirectory           |
+| --------- | -------------------------- | --------------------------- | ------------------------- | ------------------------------------ | ----------------------- |
+| Electron  | Node `fs.readFile` via IPC | Node `fs.writeFile` via IPC | Node `fs.readdir` via IPC | Node `fs.watch` via IPC (push model) | `dialog.showOpenDialog` |
+| Capacitor | NOT IMPLEMENTED (stub)     | NOT IMPLEMENTED (stub)      | NOT IMPLEMENTED (stub)    | NOT IMPLEMENTED (stub)               | NOT IMPLEMENTED (stub)  |
+| Test      | In-memory Map              | In-memory Map               | In-memory Map             | Callback set                         | Fixed `/test-workspace` |
 
 ---
 
 ## Data Flow
 
 ### User edits a task in the UI
+
 ```
 1. User toggles checkbox / edits title / changes priority
 2. UI calls dataStore.toggleTodo(id) / addTodo(...) / updateTodo(...) / deleteTodo(id)
@@ -85,6 +87,7 @@ interface FileAdapter {
 ```
 
 ### App startup
+
 ```
 1. app.html loads → +layout.svelte mounts
 2. workspace.init() runs:
@@ -97,6 +100,7 @@ interface FileAdapter {
 ```
 
 ### workspaceSync.loadWorkspace()
+
 ```
 1. adapter.listFiles(rootDir) → array of filenames
 2. Filter to .md files
@@ -107,6 +111,7 @@ interface FileAdapter {
 ```
 
 ### File watcher — external change handling
+
 ```
 1. OS notifies adapter → watchDir callback fires
 2. workspaceSync checks: is a save in-flight, or did we just finish saving?
@@ -123,16 +128,18 @@ interface FileAdapter {
 Each "List" is one `.md` file. File name (without `.md`) is the list's ID and display name.
 
 **Example: `work.md`**
+
 ```markdown
 - [ ] Build the data layer p:high due:2025-03-01
-	>Connect beryljs parser to the file adapter
+  > Connect beryljs parser to the file adapter
 - [x] Set up shadcn-svelte p:high
 - [ ] Write tests p:medium
 - [ ] Plan Q2 roadmap p:low due:2025-04-01
-	>Talk to the team first
+  > Talk to the team first
 ```
 
 **Format rules:**
+
 - Task line: `- [ ] title` or `- [x] title`
 - Labels in task body: `p:high`, `p:medium`, `p:low`, `due:YYYY-MM-DD`
 - Comment (notes): indented line `\t>text` directly after the task
@@ -140,6 +147,7 @@ Each "List" is one `.md` file. File name (without `.md`) is the list's ID and di
 - Top-level tasks only (no subtask support in v1 of the UI)
 
 **Priority encoding:**
+
 - `p:high` → `priority: 'high'`
 - `p:low` → `priority: 'low'`
 - (omit) → `priority: 'medium'` (default, not written to file)
@@ -151,51 +159,55 @@ Each "List" is one `.md` file. File name (without `.md`) is the list's ID and di
 Located at `packages/beryljs/`. Uses Nearley parser. Package name: `@repo/beryljs`.
 
 **Public API:**
+
 ```typescript
-import { parseProject, printProject } from '@repo/beryljs'
-import type { Task, LabelText } from '@repo/beryljs'
+import { parseProject, printProject } from '@repo/beryljs';
+import type { Task, LabelText } from '@repo/beryljs';
 
 // Parse markdown → Task[]
-const tasks: Task[] = parseProject(markdownString)
+const tasks: Task[] = parseProject(markdownString);
 
 // Serialize Task[] → markdown
-const md: string = printProject(tasks)
+const md: string = printProject(tasks);
 ```
 
 **Parsed Task shape** (actual types from `packages/beryljs/types.ts`):
+
 ```typescript
 class Task {
-  type: string        // "task"
-  indent: number      // 0 = top-level
-  line: number        // 1-based line number assigned post-parse
-  checked: boolean
-  description: string // FULL text including label tokens, e.g. "Buy groceries p:high due:2025-03-01"
-  labels: LabelText[] // Parsed labels
-  comments: string[]  // text of > comment lines
-  subtasks: Task[]
+  type: string; // "task"
+  indent: number; // 0 = top-level
+  line: number; // 1-based line number assigned post-parse
+  checked: boolean;
+  description: string; // FULL text including label tokens, e.g. "Buy groceries p:high due:2025-03-01"
+  labels: LabelText[]; // Parsed labels
+  comments: string[]; // text of > comment lines
+  subtasks: Task[];
 }
 
 interface LabelText {
-  text: string        // raw label string, e.g. "p:high"
+  text: string; // raw label string, e.g. "p:high"
   labels: {
-    label: string     // key, e.g. "p", "due"
-    text: string      // value, e.g. "high", "2025-03-01"
-  }
+    label: string; // key, e.g. "p", "due"
+    text: string; // value, e.g. "high", "2025-03-01"
+  };
 }
 ```
 
 **Accessing label values** (note the nesting — `labels.labels.label` / `labels.labels.text`):
+
 ```typescript
 // To find priority:
-const p = task.labels.find(l => l.labels.label === 'p')
-const priority = p?.labels.text  // "high" | "low" | undefined
+const p = task.labels.find((l) => l.labels.label === 'p');
+const priority = p?.labels.text; // "high" | "low" | undefined
 
 // To find due date:
-const d = task.labels.find(l => l.labels.label === 'due')
-const dueDate = d?.labels.text  // "2025-03-01" | undefined
+const d = task.labels.find((l) => l.labels.label === 'due');
+const dueDate = d?.labels.text; // "2025-03-01" | undefined
 ```
 
 **Key behaviors:**
+
 - `description` includes the label text — must strip labels to get clean title
 - Comments from `\t>text` lines end up in `task.comments` (always `string[]`, not `string | string[]`)
 - Parser throws on malformed input (wrap in try/catch)
@@ -211,27 +223,28 @@ const dueDate = d?.labels.text  // "2025-03-01" | undefined
 Defined in `apps/web/src/lib/types.ts`:
 
 ```typescript
-type Priority = 'low' | 'medium' | 'high'
+type Priority = 'low' | 'medium' | 'high';
 
 type Todo = {
-  id: string           // ephemeral UUID, not stored in .md file
-  title: string        // task text (no labels)
-  completed: boolean
-  priority: Priority
-  dueDate: string | null   // ISO date string YYYY-MM-DD
-  listId: string       // = filename without .md
-  createdAt: string    // ISO datetime (not stored in file)
-  notes: string        // content of > comment lines
-}
+  id: string; // ephemeral UUID, not stored in .md file
+  title: string; // task text (no labels)
+  completed: boolean;
+  priority: Priority;
+  dueDate: string | null; // ISO date string YYYY-MM-DD
+  listId: string; // = filename without .md
+  createdAt: string; // ISO datetime (not stored in file)
+  notes: string; // content of > comment lines
+};
 
 type List = {
-  id: string           // = filename without .md
-  name: string         // = filename without .md (capitalized for display)
-  color: string        // UI preference, stored in localStorage (default: '#6366f1')
-}
+  id: string; // = filename without .md
+  name: string; // = filename without .md (capitalized for display)
+  color: string; // UI preference, stored in localStorage (default: '#6366f1')
+};
 ```
 
 **Todo ↔ file mapping:**
+
 - `todo.id` — ephemeral, assigned on each file load, NOT stored in `.md`
 - `todo.listId` — the filename (e.g. `work` for `work.md`)
 - `todo.createdAt` — assigned on file load, NOT stored in `.md`
@@ -245,34 +258,42 @@ Svelte 5 uses runes instead of stores:
 
 ```typescript
 // CORRECT (Svelte 5):
-let count = $state(0)
-let doubled = $derived(count * 2)
-$effect(() => { console.log(count) })
+let count = $state(0);
+let doubled = $derived(count * 2);
+$effect(() => {
+  console.log(count);
+});
 
 // WRONG (Svelte 4 style — do not use):
-const count = writable(0)
-$: doubled = $count * 2
+const count = writable(0);
+$: doubled = $count * 2;
 ```
 
 State lives in `.svelte.ts` files. The pattern used throughout the codebase is the "factory function with getters" pattern:
 
 ```typescript
 function createStore() {
-  let value = $state<string>('')
+  let value = $state<string>('');
 
   return {
-    get value() { return value },
-    setValue(v: string) { value = v }
-  }
+    get value() {
+      return value;
+    },
+    setValue(v: string) {
+      value = v;
+    },
+  };
 }
-export const myStore = createStore()
+export const myStore = createStore();
 ```
 
 This creates a module-level singleton. Components import and use it directly:
+
 ```svelte
 <script>
-  import { myStore } from '$lib/mystore.svelte.ts'
+  import { myStore } from '$lib/mystore.svelte.ts';
 </script>
+
 {myStore.value}
 ```
 
@@ -284,9 +305,9 @@ This creates a module-level singleton. Components import and use it directly:
 // apps/web/src/lib/platform.ts
 // Note: Platform type is NOT exported
 export function detectPlatform(): 'electron' | 'capacitor' | 'browser' {
-  if (typeof (window as any).berylDesktop !== 'undefined') return 'electron'
-  if (typeof (window as any).Capacitor !== 'undefined') return 'capacitor'
-  return 'browser'
+  if (typeof (window as any).berylDesktop !== 'undefined') return 'electron';
+  if (typeof (window as any).Capacitor !== 'undefined') return 'capacitor';
+  return 'browser';
 }
 ```
 
@@ -374,6 +395,7 @@ packages/
 ```
 
 **File watcher (push model):**
+
 - `beryl:watchDir` IPC → `fs.watch(dir)` registered in `watchers` Map
 - On change: `mainWindow.webContents.send('beryl:dirChanged', dir)`
 - Preload: `ipcRenderer.on('beryl:dirChanged', callback)` via `onDirChanged`
@@ -413,12 +435,14 @@ packages/
 Tests use a `TestFileAdapter` (`apps/web/src/lib/workspace/adapters/test.ts`) that stores files in an in-memory `Map<string, string>`.
 
 **How it works:**
+
 1. In Playwright test, call `setupTestAdapter(page, initialFiles)` before navigating
 2. This calls `page.addInitScript` to set `window.__BERYL_TEST_ADAPTER__` in the browser
 3. `workspace.init()` detects the test adapter and uses it instead of a real platform adapter
 4. After UI interactions, call `getFileContent(page, path)` or `getWriteHistory(page)` to assert
 
 **Test helper functions** exported from `adapters/test.ts`:
+
 - `setupTestAdapter(page, initialFiles, rootDir?)` — inject adapter into browser
 - `getFileContent(page, path)` — read a file from the test adapter
 - `getWriteHistory(page)` — get all write operations

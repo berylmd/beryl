@@ -13,41 +13,69 @@
  */
 if (import.meta.env.VITE_CODEGEN === 'true' && typeof window !== 'undefined') {
   const files = new Map<string, string>([
-    ['/test-workspace/inbox.md',    '- [ ] Buy groceries due:2026-03-01\n- [x] Call mom\n- [ ] Finish report\n'],
-    ['/test-workspace/work.md',     '- [ ] Review PR\n- [ ] Update docs\n- [ ] Team standup due:2026-02-28\n'],
+    [
+      '/test-workspace/inbox.md',
+      '- [ ] Buy groceries due:2026-03-01\n- [x] Call mom\n- [ ] Finish report\n',
+    ],
+    [
+      '/test-workspace/work.md',
+      '- [ ] Review PR\n- [ ] Update docs\n- [ ] Team standup due:2026-02-28\n',
+    ],
     ['/test-workspace/personal.md', '- [ ] Book dentist\n- [ ] Plan weekend\n'],
-  ])
+  ]);
 
-  const watchCallbacks = new Set<() => void>()
+  const watchCallbacks = new Set<() => void>();
 
-  ;(window as any).__BERYL_TEST_ADAPTER__ = {
+  window.__BERYL_TEST_ADAPTER__ = {
     async readFile(path: string): Promise<string> {
-      const content = files.get(path)
-      if (content === undefined) throw new Error(`Codegen adapter: file not found: ${path}`)
-      return content
+      const content = files.get(path);
+      if (content === undefined) throw new Error(`Codegen adapter: file not found: ${path}`);
+      return content;
     },
 
     async writeFile(path: string, content: string): Promise<void> {
-      files.set(path, content)
-      watchCallbacks.forEach((cb) => cb())
+      files.set(path, content);
+      watchCallbacks.forEach((cb) => cb());
     },
 
     async listFiles(dir: string): Promise<string[]> {
-      const prefix = dir.endsWith('/') ? dir : dir + '/'
+      const prefix = dir.endsWith('/') ? dir : dir + '/';
       return [...files.keys()]
         .filter((p) => p.startsWith(prefix) && !p.slice(prefix.length).includes('/'))
-        .map((p) => p.slice(prefix.length))
+        .map((p) => p.slice(prefix.length));
     },
 
     async watchDir(_dir: string, callback: () => void): Promise<() => void> {
-      watchCallbacks.add(callback)
-      return () => watchCallbacks.delete(callback)
+      watchCallbacks.add(callback);
+      return () => watchCallbacks.delete(callback);
     },
 
     async pickDirectory(): Promise<string> {
-      return '/test-workspace'
+      return '/test-workspace';
     },
-  }
 
-  console.log('[beryl] Codegen adapter active — fake workspace at /test-workspace')
+    // Test-specific methods
+    getFileContent(path: string): string | undefined {
+      return files.get(path);
+    },
+
+    getWriteHistory(): Array<{ path: string; content: string }> {
+      return [];
+    },
+
+    setFile(path: string, content: string): void {
+      files.set(path, content);
+      watchCallbacks.forEach((cb) => cb());
+    },
+
+    resetHistory(): void {
+      // No-op for codegen
+    },
+
+    notifyWatchers(): void {
+      watchCallbacks.forEach((cb) => cb());
+    },
+  };
+
+  console.log('[beryl] Codegen adapter active — fake workspace at /test-workspace');
 }

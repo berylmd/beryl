@@ -3,6 +3,7 @@
 ## What This Is
 
 A redesign of the data/filtering layer to support:
+
 - User-defined saved filters ("Views") stored as `.berylview` files
 - A composable filter expression language
 - A persistent task index so global views (e.g. `due:today` across 1000 files) are instant
@@ -13,6 +14,7 @@ A redesign of the data/filtering layer to support:
 ## New Concepts
 
 ### View
+
 A saved filter. Lives as a `.berylview` file in the workspace — syncs with the rest of the workspace via iCloud/Dropbox/etc. just like lists.
 
 ```
@@ -21,6 +23,7 @@ priority:high AND due:<today
 ```
 
 ### Filter expression
+
 A simple, readable expression language evaluated against individual `Todo` objects.
 
 ---
@@ -35,16 +38,17 @@ atom     = property ':' value  |  '(' expr ')'
 
 **Properties and values:**
 
-| Property | Example values |
-|---|---|
-| `priority` | `high`, `medium`, `low` |
-| `due` | `today`, `overdue`, `tomorrow`, `<+7d`, `>+30d` |
-| `completed` | `true`, `false` |
-| `folder` | `work`, `work/projects` (matches list's containing folder) |
-| `list` | `alpha`, `work/alpha` (matches list ID) |
-| `tag` | any label, e.g. `tag:review` |
+| Property    | Example values                                             |
+| ----------- | ---------------------------------------------------------- |
+| `priority`  | `high`, `medium`, `low`                                    |
+| `due`       | `today`, `overdue`, `tomorrow`, `<+7d`, `>+30d`            |
+| `completed` | `true`, `false`                                            |
+| `folder`    | `work`, `work/projects` (matches list's containing folder) |
+| `list`      | `alpha`, `work/alpha` (matches list ID)                    |
+| `tag`       | any label, e.g. `tag:review`                               |
 
 **Examples:**
+
 ```
 priority:high
 priority:high AND due:<today
@@ -64,13 +68,14 @@ Pure TypeScript, no dependencies. Two exports:
 
 ```typescript
 // Parse and compile a filter expression string into a predicate function
-export function compileFilter(expression: string): (todo: Todo) => boolean
+export function compileFilter(expression: string): (todo: Todo) => boolean;
 
 // Validate an expression string — returns null if valid, error message if not
-export function validateFilter(expression: string): string | null
+export function validateFilter(expression: string): string | null;
 ```
 
 Internal structure:
+
 ```
 packages/filter-engine/
 ├── src/
@@ -85,9 +90,10 @@ packages/filter-engine/
 ```
 
 `compileFilter` returns a predicate — parse once, call many times:
+
 ```typescript
-const pred = compileFilter('priority:high AND due:<today')
-const results = allTodos.filter(pred)
+const pred = compileFilter('priority:high AND due:<today');
+const results = allTodos.filter(pred);
 ```
 
 ---
@@ -118,12 +124,13 @@ Replace the flat `List[]` with a recursive tree:
 ```typescript
 // In types.ts (or a new workspace-types.ts)
 type WorkspaceNode =
-  | { type: 'list';   id: string; name: string; path: string }
-  | { type: 'view';   id: string; name: string; path: string; filter: string }
-  | { type: 'folder'; id: string; name: string; path: string; children: WorkspaceNode[] }
+  | { type: 'list'; id: string; name: string; path: string }
+  | { type: 'view'; id: string; name: string; path: string; filter: string }
+  | { type: 'folder'; id: string; name: string; path: string; children: WorkspaceNode[] };
 ```
 
 `id` is always the relative path without extension, e.g.:
+
 - `work/alpha` for `work/alpha.md`
 - `urgent` for `urgent.berylview`
 - `work` for the `work/` folder
@@ -145,7 +152,14 @@ Lives in a `.beryl/` directory at the workspace root. Should be added to `.gitig
     "work/alpha.md": {
       "mtime": 1709000000,
       "todos": [
-        { "title": "Ship it", "priority": "high", "due": "2026-03-01", "completed": false, "notes": "", "listId": "work/alpha" }
+        {
+          "title": "Ship it",
+          "priority": "high",
+          "due": "2026-03-01",
+          "completed": false,
+          "notes": "",
+          "listId": "work/alpha"
+        }
       ]
     },
     "urgent.berylview": {
@@ -174,26 +188,30 @@ At 1000 files × ~20 tasks × ~150 bytes metadata ≈ 3MB. Reading one 3MB JSON 
 ### In-memory representation
 
 The index is mirrored in memory as:
+
 ```typescript
 // In data.svelte.ts
-let index = $state<Map<string, { mtime: number; todos: Todo[] }>>()
+let index = $state<Map<string, { mtime: number; todos: Todo[] }>>();
 ```
 
 All views filter against this flat map. For a global `due:today` view:
+
 ```typescript
-const pred = compileFilter('due:today AND NOT completed')
-const results = [...index.values()].flatMap(e => e.todos).filter(pred)
+const pred = compileFilter('due:today AND NOT completed');
+const results = [...index.values()].flatMap((e) => e.todos).filter(pred);
 ```
 
 ### File watcher integration
 
 When a `.md` file changes:
+
 1. Re-parse that file
 2. Update its entry in the in-memory index
 3. Debounce write of `.beryl/index.json` to disk (500ms)
 4. Re-evaluate the active view
 
 When a `.berylview` file changes:
+
 1. Read new filter expression
 2. Update the `WorkspaceNode` in the tree
 3. Re-evaluate the active view if it's the changed view
@@ -207,6 +225,7 @@ On startup, any file in the walk that's missing from the index (new file) or has
 Add `readIndex` / `writeIndex` convenience methods, or just use `readFile` / `writeFile` on `.beryl/index.json`. The latter requires no FileAdapter changes.
 
 Add `walkDir` for recursive directory traversal:
+
 ```typescript
 // Added to FileAdapter interface
 walkDir(dir: string): Promise<WalkEntry[]>
@@ -224,6 +243,7 @@ interface WalkEntry {
 ## Changes Required
 
 ### New
+
 - `packages/filter-engine/` — filter expression compiler/evaluator
 - `.beryl/index.json` — persistent task index written to workspace root
 - `.berylview` recognized as a new file type in workspace walker
@@ -231,24 +251,29 @@ interface WalkEntry {
 ### Modified
 
 **`packages/file-adapter/src/index.ts`**
+
 - Add `walkDir(dir: string): Promise<WalkEntry[]>` (recursive, returns `{ absolutePath, relativePath, isDir, mtime }`)
 
 **`apps/web/src/lib/types.ts`**
+
 - Add `WorkspaceNode` type
 - Keep `Todo`, `List`, `Priority` as-is
 
 **`apps/web/src/lib/workspace.svelte.ts`**
+
 - Replace flat `List[]` with `WorkspaceNode[]` tree
 - Add `walkWorkspace()` that builds the tree
 - Remove eager `loadWorkspace()` call on init
 
 **`apps/web/src/lib/data.svelte.ts`**
+
 - Add in-memory index: `Map<relativePath, { mtime: number; todos: Todo[] }>`
 - Add `activeView` state (can be a list node or a view node)
 - Replace `filteredTodos` derived with a derived that applies the active view's filter predicate against the full index
 - Keep all mutation functions (toggleTodo, addTodo, etc.) — they update the index in-memory and eventually write to files + update `.beryl/index.json`
 
 **`apps/web/src/lib/components/layout/AppSidebar.svelte`**
+
 - Render `WorkspaceNode` tree recursively
 - Folder = collapsible group
 - Views section alongside/below Lists section
