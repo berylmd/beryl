@@ -257,7 +257,7 @@ export async function getFileContent(
 export async function getWriteHistory(
   page: import('@playwright/test').Page
 ): Promise<Array<{ path: string; content: string }>> {
-  return page.evaluate(() => window.__BERYL_TEST_ADAPTER__?.getWriteHistory());
+  return page.evaluate(() => window.__BERYL_TEST_ADAPTER__?.getWriteHistory() ?? []);
 }
 
 /**

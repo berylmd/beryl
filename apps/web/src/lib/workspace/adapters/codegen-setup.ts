@@ -53,6 +53,28 @@ if (import.meta.env.VITE_CODEGEN === 'true' && typeof window !== 'undefined') {
     async pickDirectory(): Promise<string> {
       return '/test-workspace';
     },
+
+    // Test-specific methods
+    getFileContent(path: string): string | undefined {
+      return files.get(path);
+    },
+
+    getWriteHistory(): Array<{ path: string; content: string }> {
+      return [];
+    },
+
+    setFile(path: string, content: string): void {
+      files.set(path, content);
+      watchCallbacks.forEach((cb) => cb());
+    },
+
+    resetHistory(): void {
+      // No-op for codegen
+    },
+
+    notifyWatchers(): void {
+      watchCallbacks.forEach((cb) => cb());
+    },
   };
 
   console.log('[beryl] Codegen adapter active — fake workspace at /test-workspace');
