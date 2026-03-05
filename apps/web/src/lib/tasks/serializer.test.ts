@@ -130,9 +130,7 @@ describe('fileNameToListId', () => {
 
 describe('serializeTodo', () => {
   it('serializes an unchecked task', () => {
-    expect(serializeTodo(makeTodo({ title: 'Buy milk', completed: false }))).toBe(
-      '- [ ] Buy milk'
-    );
+    expect(serializeTodo(makeTodo({ title: 'Buy milk', completed: false }))).toBe('- [ ] Buy milk');
   });
 
   it('serializes a completed task', () => {
