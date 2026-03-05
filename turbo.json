@@ -12,7 +12,8 @@
       "inputs": ["$TURBO_DEFAULT$", "eslint.config.*", ".eslintrc*", ".prettierrc*"]
     },
     "check-types": {
-      "dependsOn": ["^check-types"]
+      "dependsOn": ["^check-types"],
+      "inputs": ["$TURBO_DEFAULT$", "tsconfig*.json", "svelte.config.*"]
     },
     "dev": {
       "cache": false,
