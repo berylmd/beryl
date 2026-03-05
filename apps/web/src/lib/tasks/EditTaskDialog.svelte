@@ -64,7 +64,11 @@
         <label class="text-sm font-medium" for="edit-list">List</label>
         <select
           id="edit-list"
-          class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-colors focus:outline-none focus:ring-1 focus:ring-ring"
+          class="
+            flex h-9 w-full rounded-md border border-input bg-background px-3
+            py-1 text-sm shadow-xs transition-colors
+            focus:ring-1 focus:ring-ring focus:outline-none
+          "
           bind:value={editListId}
         >
           {#each dataStore.lists as list}
@@ -76,7 +80,12 @@
         <label class="text-sm font-medium" for="edit-notes">Notes</label>
         <textarea
           id="edit-notes"
-          class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+          class="
+            flex min-h-[80px] w-full rounded-md border border-input
+            bg-background px-3 py-2 text-sm shadow-xs
+            placeholder:text-muted-foreground
+            focus:ring-1 focus:ring-ring focus:outline-none
+          "
           placeholder="Add notes..."
           bind:value={editNotes}
         ></textarea>

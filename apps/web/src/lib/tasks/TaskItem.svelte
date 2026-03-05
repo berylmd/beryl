@@ -37,7 +37,11 @@
 
 <div
   class={cn(
-    'group flex items-start gap-3 rounded-xl border bg-card px-4 py-3 shadow-xs transition-all hover:shadow-sm',
+    `
+      group flex items-start gap-3 rounded-xl border bg-card px-4 py-3 shadow-xs
+      transition-all
+      hover:shadow-sm
+    `,
     todo.completed && 'opacity-60'
   )}
 >
@@ -51,10 +55,7 @@
 
   <div class="min-w-0 flex-1">
     <p
-      class={cn(
-        'text-sm font-medium leading-snug',
-        todo.completed && 'line-through text-muted-foreground'
-      )}
+      class={cn('text-sm/snug font-medium', todo.completed && 'text-muted-foreground line-through')}
     >
       {todo.title}
     </p>
@@ -79,13 +80,20 @@
   </div>
 
   <div
-    class="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100"
+    class="
+      flex shrink-0 items-center gap-1 opacity-0 transition-opacity
+      group-hover:opacity-100
+    "
   >
     <DropdownMenu>
       <DropdownMenuTrigger>
         {#snippet child({ props })}
           <button
-            class="inline-flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+            class="
+              inline-flex size-7 items-center justify-center rounded-md
+              text-muted-foreground transition-colors
+              hover:bg-accent hover:text-accent-foreground
+            "
             aria-label="Task options"
             {...props}
           >
@@ -100,7 +108,10 @@
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          class="text-destructive focus:text-destructive"
+          class="
+            text-destructive
+            focus:text-destructive
+          "
           onclick={() => dataStore.deleteTodo(todo.id)}
         >
           <Trash2Icon class="mr-2 size-4" />

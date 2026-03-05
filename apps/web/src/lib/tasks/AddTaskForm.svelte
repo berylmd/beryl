@@ -18,7 +18,11 @@
 
 <form class="mb-6 flex gap-2" onsubmit={handleAddTodo}>
   <div class="relative flex-1">
-    <PlusIcon class="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+    <PlusIcon
+      class="
+      absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground
+    "
+    />
     <Input class="pl-9" placeholder="Add a task... press Enter to save" bind:value={newTodoTitle} />
   </div>
 

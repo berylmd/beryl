@@ -30,10 +30,14 @@
   }
 </script>
 
-<div class="flex flex-col items-center justify-center h-screen w-full gap-6 p-8">
-  <div class="text-center mx-auto">
+<div
+  class="
+  flex h-screen w-full flex-col items-center justify-center gap-6 p-8
+"
+>
+  <div class="mx-auto text-center">
     <h1 class="text-3xl font-bold tracking-tight">Welcome to Beryl</h1>
-    <p class="mt-2 text-muted-foreground max-w-sm">
+    <p class="mt-2 max-w-sm text-muted-foreground">
       Beryl reads your tasks from markdown files. Choose a folder to get started.
     </p>
   </div>
@@ -41,16 +45,20 @@
   <button
     onclick={openWorkspace}
     disabled={picking}
-    class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-primary-foreground font-medium disabled:opacity-50 mx-auto"
+    class="
+      mx-auto inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3
+      font-medium text-primary-foreground
+      disabled:opacity-50
+    "
   >
     {picking ? 'Opening…' : 'Open Workspace Folder'}
   </button>
 
   {#if error}
-    <p class="text-destructive text-sm mx-auto">{error}</p>
+    <p class="mx-auto text-sm text-destructive">{error}</p>
   {/if}
 
-  <p class="text-xs text-muted-foreground max-w-xs text-center mx-auto">
+  <p class="mx-auto max-w-xs text-center text-xs text-muted-foreground">
     Your tasks stay on your device. Sync with iCloud, Dropbox, or any tool you already use.
   </p>
 </div>

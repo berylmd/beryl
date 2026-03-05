@@ -38,7 +38,10 @@
       style="padding-top: calc(var(--safe-top) + 0.75rem)"
     >
       <div
-        class="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground"
+        class="
+          flex size-8 items-center justify-center rounded-lg bg-primary
+          text-primary-foreground
+        "
       >
         <CheckSquare2Icon class="size-4" />
       </div>
@@ -82,7 +85,10 @@
         <Button
           variant="ghost"
           size="icon"
-          class="ml-auto size-5 text-muted-foreground hover:text-foreground"
+          class="
+            ml-auto size-5 text-muted-foreground
+            hover:text-foreground
+          "
           onclick={() => (showNewList = !showNewList)}
         >
           <PlusIcon class="size-3.5" />
@@ -92,7 +98,12 @@
         {#if showNewList}
           <form class="px-2 py-1" onsubmit={handleAddList}>
             <input
-              class="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm outline-none placeholder:text-muted-foreground focus:ring-1 focus:ring-ring"
+              class="
+                w-full rounded-md border border-input bg-background px-2 py-1.5
+                text-sm outline-none
+                placeholder:text-muted-foreground
+                focus:ring-1 focus:ring-ring
+              "
               placeholder="List name..."
               bind:value={newListName}
               onblur={() => {

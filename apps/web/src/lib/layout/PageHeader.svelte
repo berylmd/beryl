@@ -10,7 +10,7 @@
 </script>
 
 <header
-  class="sticky top-0 z-10 shrink-0 border-b bg-background/95 backdrop-blur"
+  class="sticky top-0 z-10 shrink-0 border-b bg-background/95 backdrop-blur-sm"
   style="padding-top: var(--safe-top)"
 >
   <div class="flex h-14 items-center gap-2 px-4">
