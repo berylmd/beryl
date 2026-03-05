@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import type { LabelText } from '@repo/beryljs';
 import {
   stripLabels,
   normalizeComments,
