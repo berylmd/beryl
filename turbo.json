@@ -28,7 +28,10 @@
       "persistent": true
     },
     "test": {
-      "inputs": ["$TURBO_DEFAULT$", "**/*.test.js", "**/*.test.ts"],
+      "inputs": ["$TURBO_DEFAULT$", "**/*.test.ts", "vitest.config.*"]
+    },
+    "test:e2e": {
+      "inputs": ["$TURBO_DEFAULT$", "**/*.test.js", "**/*.spec.ts"],
       "outputs": []
     },
     "test:watch": {
