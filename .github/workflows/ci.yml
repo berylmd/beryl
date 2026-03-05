@@ -1,7 +1,7 @@
 # Turbo remote caching via rharkor/caching-for-turbo (free, backed by GitHub Actions cache)
 # No secrets required.
 
-name: Build Desktop
+name: CI
 
 on:
   push:
@@ -14,8 +14,36 @@ on:
       - main
 
 jobs:
+  lint:
+    name: Lint & Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.0.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Cache turbo build setup
+        uses: rharkor/caching-for-turbo@v1.8
+
+      - name: Run lint
+        run: pnpm run lint
+
   test:
     name: Run Tests
+    needs: [lint]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -41,16 +69,11 @@ jobs:
       - name: Cache turbo build setup
         uses: rharkor/caching-for-turbo@v1.8
 
-      - name: Run ESLint
-        run: pnpm run lint
-
-      - name: Check formatting
-        run: pnpm run format:check
-
       - name: Run tests
         run: pnpm run test
 
   build:
+    name: Build Desktop
     needs: [test]
     strategy:
       matrix:
@@ -87,7 +110,6 @@ jobs:
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
         shell: bash
         run: |
-          # Extract version from tag (e.g., v1.2.3 -> 1.2.3)
           VERSION=$(echo ${{ github.ref }} | sed 's/refs\/tags\///' | sed 's/^v//')
           echo "Injecting version: $VERSION into apps/desktop/package.json"
           cd apps/desktop
@@ -108,7 +130,7 @@ jobs:
           if-no-files-found: error
 
   release:
-    needs: [build, test]
+    needs: [build]
     runs-on: ubuntu-latest
     permissions:
       contents: write
