@@ -20,12 +20,17 @@
 </svelte:head>
 
 {#if dataStore.isLoading}
-  <div class="flex items-center justify-center h-screen text-muted-foreground">Loading…</div>
+  <div class="flex h-screen items-center justify-center text-muted-foreground">Loading…</div>
 {:else}
   <SidebarInset>
     <PageHeader title={dataStore.activeListId ?? 'Tasks'} />
 
-    <div class="flex flex-1 flex-col p-4 md:p-6">
+    <div
+      class="
+      flex flex-1 flex-col p-4
+      md:p-6
+    "
+    >
       {#if dataStore.activeListId}
         <AddTaskForm />
       {/if}

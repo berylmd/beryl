@@ -16,8 +16,12 @@ export function normalizeComments(comments: unknown): string {
 }
 
 export function parseDueDate(labels: LabelText[]): string | null {
-  const d = labels.find((l) => l.labels.label === 'due');
-  return d ? d.labels.text : null;
+  // The beryljs LabelText declaration says { labels: { label, text } } but the
+  // actual runtime shape from the Nearley grammar is { label, value }.
+  const d = (labels as unknown as Array<{ label: string; value: string }>).find(
+    (l) => l.label === 'due'
+  );
+  return d ? d.value : null;
 }
 
 export function fileNameToListId(filename: string): string {

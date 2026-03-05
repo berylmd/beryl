@@ -4,6 +4,11 @@
       "mode": "auto"
     }
   ],
+  "typescript.validate.enable": false,
+  "javascript.validate.enable": false,
+  "svelte.plugin.svelte.diagnostics.enable": false,
+  "svelte.plugin.typescript.diagnostics.enable": false,
+  "tailwindCSS.validate": false,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
   "[javascript]": {

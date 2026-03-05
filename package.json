@@ -10,8 +10,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check-types": "turbo run check-types",
-    "test": "turbo run test",
+    "test": "turbo run test test:e2e",
     "test:watch": "turbo run test:watch",
+    "test:e2e": "turbo run test:e2e",
     "test:ui": "turbo run test:ui --filter=@repo/web",
     "test:codegen": "turbo run dev:codegen test:codegen --filter=@repo/web",
     "dev:codegen": "turbo run dev:codegen --filter=@repo/web"
