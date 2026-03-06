@@ -37,13 +37,6 @@ function createDataStore() {
     }
   }
 
-  function setLoading(v: boolean) {
-    isLoading = v;
-  }
-  function setLoadError(e: string | null) {
-    loadError = e;
-  }
-
   // ── Mutations ─────────────────────────────────────────────────────────────
 
   function setActiveList(id: string | null) {
@@ -122,13 +115,17 @@ function createDataStore() {
     get isLoading() {
       return isLoading;
     },
+    set isLoading(v: boolean) {
+      isLoading = v;
+    },
     get loadError() {
       return loadError;
     },
+    set loadError(e: string | null) {
+      loadError = e;
+    },
     setSaveCallback,
     hydrate,
-    setLoading,
-    setLoadError,
     setActiveList,
     toggleTodo,
     addTodo,
