@@ -7,7 +7,6 @@
   import TaskList from '$lib/tasks/TaskList.svelte';
   import EditTaskDialog from '$lib/tasks/EditTaskDialog.svelte';
 
-  let activeFilter = $state<'all' | 'today' | 'upcoming' | 'completed'>('all');
   let editingTodo = $state<Todo | null>(null);
 
   function openEdit(id: string) {
@@ -34,7 +33,7 @@
       {#if dataStore.activeListId}
         <AddTaskForm />
       {/if}
-      <TaskList todos={dataStore.filteredTodos} {activeFilter} onedit={openEdit} />
+      <TaskList todos={dataStore.filteredTodos} onedit={openEdit} />
     </div>
   </SidebarInset>
 

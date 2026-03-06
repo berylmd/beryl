@@ -53,31 +53,6 @@
   </SidebarHeader>
 
   <SidebarContent>
-    <!-- Navigation filters -->
-    <!-- <SidebarGroup>
-			<SidebarMenu>
-				{#each filters as filter}
-					{@const count = todosStore.counts[filter.id]}
-					<SidebarMenuItem>
-						<SidebarMenuButton
-							isActive={todosStore.activeFilter === filter.id && !todosStore.activeListId}
-							onclick={() => {
-								todosStore.activeFilter = filter.id;
-							}}
-						>
-							<filter.icon />
-							<span>{filter.label}</span>
-						</SidebarMenuButton>
-						{#if count > 0}
-							<SidebarMenuBadge>{count}</SidebarMenuBadge>
-						{/if}
-					</SidebarMenuItem>
-				{/each}
-			</SidebarMenu>
-		</SidebarGroup>
-
-		<SidebarSeparator /> -->
-
     <!-- Lists -->
     <SidebarGroup>
       <SidebarGroupLabel>

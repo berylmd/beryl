@@ -60,8 +60,8 @@ function createWorkspaceSync() {
 
     loadInProgress = true;
     const isInitialLoad = dataStore.lists.length === 0;
-    if (isInitialLoad) dataStore.setLoading(true);
-    dataStore.setLoadError(null);
+    if (isInitialLoad) dataStore.isLoading = true;
+    dataStore.loadError = null;
 
     try {
       const filenames = await adapter.listFiles(rootDir);
@@ -100,10 +100,10 @@ function createWorkspaceSync() {
         }
       });
     } catch (e) {
-      dataStore.setLoadError(String(e));
+      dataStore.loadError = String(e);
     } finally {
       loadInProgress = false;
-      if (isInitialLoad) dataStore.setLoading(false);
+      if (isInitialLoad) dataStore.isLoading = false;
     }
   }
 
